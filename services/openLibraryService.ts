@@ -1,4 +1,4 @@
-import { supabase } from '../src/integrations/supabase/client';
+import { supabase } from './supabaseClient';
 
 const COVER_BASE_URL = 'https://covers.openlibrary.org/b';
 
