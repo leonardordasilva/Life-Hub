@@ -5,7 +5,7 @@ import { MediaStatus, EntertainmentItem, UserRole } from '../../types';
 import { searchGame, searchGamesMany, getGameDetails, RawgResult } from '../../services/rawgService';
 import { translateToPortuguese } from '../../services/geminiService';
 import { useToast } from '../../components/Toast';
-import { Gamepad2, Plus, Trash2, Search, X, Pencil, PlayCircle, CheckCircle, Clock, Loader2, Trophy, Coffee, Image as ImageIcon, Check, Calendar, Layers, RefreshCw, Star } from 'lucide-react';
+import { Gamepad2, Plus, Trash2, Search, X, Pencil, PlayCircle, CheckCircle, Clock, Loader2, Trophy, Coffee, Image as ImageIcon, Check, Calendar, Layers, RefreshCw, Star, ArrowRight } from 'lucide-react';
 
 interface PosterCardProps {
     item: EntertainmentItem;
@@ -427,16 +427,28 @@ export const GamesDashboard: React.FC<GamesDashboardProps> = ({ role }) => {
                                 <div>
                                     <h3 className="text-2xl font-bold text-white mb-4">Atualizações encontradas!</h3>
                                     <p className="text-slate-400 text-sm mb-4">Os jogos abaixo possuem novos metadados disponíveis.</p>
-                                    <div className="max-h-[300px] overflow-y-auto custom-scrollbar space-y-3 mb-6 pr-2">
+                                    <div className="max-h-[400px] overflow-y-auto custom-scrollbar space-y-3 mb-6 pr-2">
                                         {syncState.diffs.map(d => (
-                                            <div key={d.id} className={`p-3 rounded-lg border flex items-center justify-between transition-colors cursor-pointer ${selectedDiffs.has(d.id) ? 'bg-violet-500/10 border-violet-500/50' : 'bg-slate-800 border-white/5'}`} onClick={() => {
-                                                const newSet = new Set(selectedDiffs);
-                                                if (newSet.has(d.id)) newSet.delete(d.id);
-                                                else newSet.add(d.id);
-                                                setSelectedDiffs(newSet);
-                                            }}>
-                                                <div><p className="text-white font-bold text-sm">{d.title}</p><p className="text-xs text-slate-400">Clique para selecionar e atualizar todos os dados.</p></div>
-                                                <div className={`w-5 h-5 rounded border flex items-center justify-center ${selectedDiffs.has(d.id) ? 'bg-violet-600 border-violet-600' : 'border-slate-600'}`}>{selectedDiffs.has(d.id) && <Check className="w-3 h-3 text-white" />}</div>
+                                            <div key={d.id} className={`rounded-lg border transition-colors ${selectedDiffs.has(d.id) ? 'bg-violet-500/10 border-violet-500/50' : 'bg-slate-800 border-white/5'}`}>
+                                                <div className="p-3 flex items-center justify-between cursor-pointer" onClick={() => {
+                                                    const newSet = new Set(selectedDiffs);
+                                                    if (newSet.has(d.id)) newSet.delete(d.id);
+                                                    else newSet.add(d.id);
+                                                    setSelectedDiffs(newSet);
+                                                }}>
+                                                    <div><p className="text-white font-bold text-sm">{d.title}</p><p className="text-xs text-slate-400">{d.changes.length} alteração(ões) encontrada(s)</p></div>
+                                                    <div className={`w-5 h-5 rounded border flex items-center justify-center shrink-0 ${selectedDiffs.has(d.id) ? 'bg-violet-600 border-violet-600' : 'border-slate-600'}`}>{selectedDiffs.has(d.id) && <Check className="w-3 h-3 text-white" />}</div>
+                                                </div>
+                                                <div className="px-3 pb-3 space-y-1.5">
+                                                    {d.changes.map((c, idx) => (
+                                                        <div key={idx} className="flex items-start gap-2 text-xs bg-slate-900/50 rounded-md px-2.5 py-1.5">
+                                                            <span className="text-violet-400 font-semibold shrink-0 w-28">{c.label}</span>
+                                                            <span className="text-red-400/70 line-through truncate max-w-[120px]" title={c.oldValue}>{c.oldValue}</span>
+                                                            <ArrowRight className="w-3 h-3 text-slate-500 shrink-0 mt-0.5" />
+                                                            <span className="text-emerald-400 truncate max-w-[120px]" title={c.newValue}>{c.newValue}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </div>
                                         ))}
                                     </div>

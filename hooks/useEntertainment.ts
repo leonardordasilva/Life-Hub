@@ -6,6 +6,13 @@ import { searchOpenLibrary, getBookDetails } from '../services/openLibraryServic
 import { translateToPortuguese } from '../services/geminiService';
 import { useToast } from '../components/Toast';
 
+export interface FieldChange {
+    field: string;
+    label: string;
+    oldValue: string;
+    newValue: string;
+}
+
 export interface SyncDiff {
     id: string;
     title: string;
@@ -13,6 +20,7 @@ export interface SyncDiff {
     currentValue: any;
     newValue: any;
     fullData?: any;
+    changes: FieldChange[];
 }
 
 // Helper para formatar nota com 1 casa decimal
@@ -439,24 +447,41 @@ export const useEntertainment = () => {
                 }
 
                 if (result) {
-                    let hasChanges = false;
-                    if (type === 'SERIES' && result.totalSeasons && result.totalSeasons !== (item.totalSeasons || 0)) hasChanges = true;
-                    if (type === 'ANIME' && result.totalEpisodes && result.totalEpisodes !== (item.totalEpisodes || 0)) hasChanges = true;
+                    const changes: FieldChange[] = [];
 
-                    // Check all metadata fields for divergence (not just missing)
-                    if (result.synopsis && result.synopsis !== item.synopsis) hasChanges = true;
-                    if (result.posterUrl && result.posterUrl !== item.posterUrl) hasChanges = true;
-                    if (result.genres && JSON.stringify(result.genres) !== JSON.stringify(item.genres)) hasChanges = true;
+                    if (type === 'SERIES' && result.totalSeasons && result.totalSeasons !== (item.totalSeasons || 0)) {
+                        changes.push({ field: 'totalSeasons', label: 'Temporadas', oldValue: String(item.totalSeasons || 0), newValue: String(result.totalSeasons) });
+                    }
+                    if (type === 'ANIME' && result.totalEpisodes && result.totalEpisodes !== (item.totalEpisodes || 0)) {
+                        changes.push({ field: 'totalEpisodes', label: 'Episódios', oldValue: String(item.totalEpisodes || 0), newValue: String(result.totalEpisodes) });
+                    }
+                    if (result.synopsis && result.synopsis !== item.synopsis) {
+                        changes.push({ field: 'synopsis', label: 'Sinopse', oldValue: item.synopsis ? 'Existente' : 'Vazio', newValue: 'Nova sinopse' });
+                    }
+                    if (result.posterUrl && result.posterUrl !== item.posterUrl) {
+                        changes.push({ field: 'posterUrl', label: 'Capa', oldValue: item.posterUrl ? 'Existente' : 'Sem capa', newValue: 'Nova capa' });
+                    }
+                    if (result.genres && JSON.stringify(result.genres) !== JSON.stringify(item.genres)) {
+                        changes.push({ field: 'genres', label: 'Gêneros', oldValue: item.genres?.join(', ') || 'Nenhum', newValue: result.genres.join(', ') });
+                    }
 
                     const currentRating = formatRating(item.rating);
                     const newRating = formatRating(result.rating);
-                    if (newRating !== currentRating) hasChanges = true;
+                    if (newRating !== currentRating) {
+                        changes.push({ field: 'rating', label: 'Nota', oldValue: String(currentRating), newValue: String(newRating) });
+                    }
 
-                    if (type === 'BOOK' && result.author && result.author !== item.author) hasChanges = true;
-                    if ((type === 'BOOK' || type === 'MOVIE') && result.releaseDate && result.releaseDate !== item.releaseDate) hasChanges = true;
-                    if (!item.externalId && (result.id || result.key)) hasChanges = true;
+                    if (type === 'BOOK' && result.author && result.author !== item.author) {
+                        changes.push({ field: 'author', label: 'Autor', oldValue: item.author || 'Vazio', newValue: result.author });
+                    }
+                    if ((type === 'BOOK' || type === 'MOVIE') && result.releaseDate && result.releaseDate !== item.releaseDate) {
+                        changes.push({ field: 'releaseDate', label: 'Data de Lançamento', oldValue: item.releaseDate || 'Vazio', newValue: result.releaseDate });
+                    }
+                    if (!item.externalId && (result.id || result.key)) {
+                        changes.push({ field: 'externalId', label: 'ID Externo', oldValue: 'Não vinculado', newValue: String(result.id || result.key) });
+                    }
 
-                    if (hasChanges) {
+                    if (changes.length > 0) {
                         const newValue = (type === 'BOOK' || type === 'MOVIE') ? 'Metadados' : (result.totalSeasons || result.totalEpisodes || 0);
                         const idFromApi = result.id ? result.id.toString() : result.key;
 
@@ -466,7 +491,8 @@ export const useEntertainment = () => {
                             field: 'all',
                             currentValue: item.totalSeasons || item.totalEpisodes || 0,
                             newValue: newValue,
-                            fullData: { ...result, id: idFromApi }
+                            fullData: { ...result, id: idFromApi },
+                            changes
                         });
                     }
                 }

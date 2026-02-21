@@ -5,10 +5,18 @@ import { searchGame } from '../services/rawgService';
 import { translateToPortuguese } from '../services/geminiService';
 import { useToast } from '../components/Toast';
 
+export interface GameFieldChange {
+  field: string;
+  label: string;
+  oldValue: string;
+  newValue: string;
+}
+
 export interface GameSyncDiff {
   id: string;
   title: string;
   fullData?: any;
+  changes: GameFieldChange[];
 }
 
 const formatRating = (rating?: number): number => {
@@ -155,24 +163,37 @@ export const useGames = () => {
       try {
         const result = await searchGame(game.title);
         if (result) {
-          let hasChanges = false;
+          const changes: GameFieldChange[] = [];
 
-          if (result.synopsis && result.synopsis !== game.synopsis) hasChanges = true;
-          if (result.posterUrl && result.posterUrl !== game.posterUrl) hasChanges = true;
-          if (result.genres && JSON.stringify(result.genres) !== JSON.stringify(game.genres)) hasChanges = true;
+          if (result.synopsis && result.synopsis !== game.synopsis) {
+            changes.push({ field: 'synopsis', label: 'Sinopse', oldValue: game.synopsis ? 'Existente' : 'Vazio', newValue: 'Nova sinopse' });
+          }
+          if (result.posterUrl && result.posterUrl !== game.posterUrl) {
+            changes.push({ field: 'posterUrl', label: 'Capa', oldValue: game.posterUrl ? 'Existente' : 'Sem capa', newValue: 'Nova capa' });
+          }
+          if (result.genres && JSON.stringify(result.genres) !== JSON.stringify(game.genres)) {
+            changes.push({ field: 'genres', label: 'Gêneros', oldValue: game.genres?.join(', ') || 'Nenhum', newValue: result.genres.join(', ') });
+          }
 
           const currentRating = formatRating(game.rating);
           const newRating = formatRating(result.rating);
-          if (newRating !== currentRating) hasChanges = true;
+          if (newRating !== currentRating) {
+            changes.push({ field: 'rating', label: 'Nota', oldValue: String(currentRating), newValue: String(newRating) });
+          }
 
-          if (result.platforms && result.platforms.length > 0 && result.platforms[0] !== game.platform) hasChanges = true;
-          if (!game.externalId && result.id) hasChanges = true;
+          if (result.platforms && result.platforms.length > 0 && result.platforms[0] !== game.platform) {
+            changes.push({ field: 'platform', label: 'Plataforma', oldValue: game.platform || 'Não definida', newValue: result.platforms[0] });
+          }
+          if (!game.externalId && result.id) {
+            changes.push({ field: 'externalId', label: 'ID Externo', oldValue: 'Não vinculado', newValue: String(result.id) });
+          }
 
-          if (hasChanges) {
+          if (changes.length > 0) {
             diffs.push({
               id: game.id,
               title: game.title,
-              fullData: result
+              fullData: result,
+              changes
             });
           }
         }
