@@ -4,9 +4,10 @@ import { Shield, ArrowRight, Lock, Loader2, AlertCircle, Mail, UserPlus, LogIn }
 interface LoginScreenProps {
   onSignIn: (email: string, password: string) => Promise<void>;
   onSignUp: (email: string, password: string) => Promise<void>;
+  onForgotPassword: () => void;
 }
 
-export const LoginScreen: React.FC<LoginScreenProps> = ({ onSignIn, onSignUp }) => {
+export const LoginScreen: React.FC<LoginScreenProps> = ({ onSignIn, onSignUp, onForgotPassword }) => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -123,7 +124,15 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onSignIn, onSignUp }) 
             </button>
           </form>
 
-          <div className="mt-6 text-center">
+          <div className="mt-6 text-center space-y-2">
+            {!isSignUp && (
+              <button
+                onClick={onForgotPassword}
+                className="text-sm text-slate-400 hover:text-indigo-400 transition-colors block mx-auto"
+              >
+                Esqueci minha senha
+              </button>
+            )}
             <button
               onClick={() => { setIsSignUp(!isSignUp); setError(''); }}
               className="text-sm text-slate-400 hover:text-indigo-400 transition-colors"

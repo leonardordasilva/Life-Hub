@@ -6,6 +6,8 @@ import { EntertainmentDashboard } from './views/Entertainment/EntertainmentDashb
 import { GamesDashboard } from './views/Games/GamesDashboard';
 import { SetupScreen } from './views/SetupScreen';
 import { LoginScreen } from './views/LoginScreen';
+import { ForgotPassword } from './views/ForgotPassword';
+import { ResetPassword } from './views/ResetPassword';
 import { AppSection } from './types';
 import { 
   LayoutDashboard, 
@@ -28,6 +30,8 @@ const App: React.FC = () => {
   const [dbError, setDbError] = useState<string | null>(null);
   const [retryTrigger, setRetryTrigger] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
   
   const { user, userRole, loading: authLoading, signIn, signUp, signOut } = useAuth();
 
@@ -65,6 +69,15 @@ const App: React.FC = () => {
     setCurrentSection(AppSection.HOME);
   };
 
+  // Check for reset-password route
+  useEffect(() => {
+    const path = window.location.pathname;
+    const hash = window.location.hash;
+    if (path === '/reset-password' || hash.includes('type=recovery')) {
+      setShowResetPassword(true);
+    }
+  }, []);
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
@@ -73,8 +86,18 @@ const App: React.FC = () => {
     );
   }
 
+  if (showResetPassword) {
+    return <ResetPassword onDone={() => {
+      setShowResetPassword(false);
+      window.history.replaceState(null, '', '/');
+    }} />;
+  }
+
   if (!user || !userRole) {
-    return <LoginScreen onSignIn={signIn} onSignUp={signUp} />;
+    if (showForgotPassword) {
+      return <ForgotPassword onBack={() => setShowForgotPassword(false)} />;
+    }
+    return <LoginScreen onSignIn={signIn} onSignUp={signUp} onForgotPassword={() => setShowForgotPassword(true)} />;
   }
 
   if (isDbReady === null) {
