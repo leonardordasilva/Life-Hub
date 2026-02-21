@@ -61,7 +61,7 @@ const PosterCard: React.FC<PosterCardProps> = ({
             <div className="relative z-10 p-4 flex items-start gap-2">
                 {isWatching && (
                     <div className="px-2.5 py-1 bg-green-500/90 text-white text-[10px] font-bold rounded-full shadow-lg flex items-center gap-1 uppercase tracking-wider backdrop-blur-sm">
-                        <PlayCircle className="w-3 h-3" /> Vendo
+                        <PlayCircle className="w-3 h-3" /> {item.type === 'BOOK' ? 'Lendo' : 'Vendo'}
                     </div>
                 )}
                 {(item.rating ?? 0) > 0 && (
