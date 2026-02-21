@@ -4,20 +4,27 @@ import { MediaStatus, EntertainmentItem, UserRole } from '../../types';
 import { searchGame, searchGamesMany, getGameDetails, RawgResult } from '../../services/rawgService';
 import { translateToPortuguese } from '../../services/geminiService';
 import { useToast } from '../../components/Toast';
-import { Gamepad2, Plus, Trash2, Search, X, Pencil, PlayCircle, CheckCircle, Clock, Loader2, Trophy, Coffee, Image as ImageIcon, Check, Info, Calendar, Layers, RefreshCw, Star } from 'lucide-react';
+import { Gamepad2, Plus, Trash2, Search, X, Pencil, PlayCircle, CheckCircle, Clock, Loader2, Trophy, Coffee, Image as ImageIcon, Check, Calendar, Layers, RefreshCw, Star } from 'lucide-react';
 
 interface PosterCardProps {
     item: EntertainmentItem;
     children: React.ReactNode;
     actions?: React.ReactNode;
+    onClick?: () => void;
 }
 
-const PosterCard: React.FC<PosterCardProps> = ({ item, children, actions }) => {
+const PosterCard: React.FC<PosterCardProps> = ({ item, children, actions, onClick }) => {
     const isPlaying = item.status === 'WATCHING';
     const borderColor = isPlaying ? 'border-violet-500/50 shadow-[0_0_20px_rgba(139,92,246,0.15)]' : 'border-white/5 hover:border-white/15';
 
     return (
-        <div className={`relative group overflow-hidden rounded-2xl bg-slate-800/80 border transition-all duration-300 min-h-[340px] flex flex-col ${borderColor}`}>
+        <div
+            className={`relative group overflow-hidden rounded-2xl bg-slate-800/80 border transition-all duration-300 min-h-[340px] flex flex-col ${borderColor} ${onClick ? 'cursor-pointer' : ''}`}
+            onClick={(e) => {
+                if ((e.target as HTMLElement).closest('button')) return;
+                onClick?.();
+            }}
+        >
             {item.posterUrl ? (
                 <div className="absolute inset-0 z-0">
                     <img src={item.posterUrl} alt={item.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-50 group-hover:opacity-30" />
@@ -27,26 +34,26 @@ const PosterCard: React.FC<PosterCardProps> = ({ item, children, actions }) => {
                 <div className="absolute inset-0 bg-gradient-to-br from-violet-900/20 to-slate-900 z-0" />
             )}
 
-            {/* Hover Action Overlay */}
-            {actions && (
-                <div className="absolute top-3 right-3 z-30 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0">
-                    {actions}
-                </div>
-            )}
-
-            {/* Top Badges */}
-            <div className="relative z-10 p-4 flex justify-between items-start">
-                {isPlaying ? (
+            {/* Top Badges - Left side */}
+            <div className="relative z-10 p-4 flex items-start gap-2">
+                {isPlaying && (
                     <div className="px-2.5 py-1 bg-violet-600/90 text-white text-[10px] font-bold rounded-full shadow-lg flex items-center gap-1 uppercase tracking-wider backdrop-blur-sm">
                         <Gamepad2 className="w-3 h-3" /> Jogando
                     </div>
-                ) : (<span />)}
+                )}
                 {(item.rating ?? 0) > 0 && (
                     <div className="px-2 py-1 bg-black/50 backdrop-blur-sm text-amber-400 text-xs font-bold rounded-lg flex items-center gap-1 border border-amber-500/20">
                         <Star className="w-3 h-3 fill-current" /> {(item.rating ?? 0).toFixed(1)}
                     </div>
                 )}
             </div>
+
+            {/* Hover Action Overlay - Top right */}
+            {actions && (
+                <div className="absolute top-3 right-3 z-30 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0">
+                    {actions}
+                </div>
+            )}
 
             {/* Content pushed to bottom */}
             <div className="relative z-10 mt-auto p-5 pt-8 flex flex-col gap-3">
@@ -259,15 +266,12 @@ export const GamesDashboard: React.FC<GamesDashboardProps> = ({ role }) => {
                         {filteredGames.map(game => {
                             const isSyncing = syncingId === game.id;
                             return (
-                                <PosterCard key={game.id} item={game}
-                                    actions={<>
-                                        <button onClick={() => setSelectedDetailItem(game)} className="btn-icon btn-icon-info" title="Detalhes"><Info className="w-3.5 h-3.5" /></button>
-                                        {isAdmin && <>
-                                            <button onClick={() => handleIndividualSync(game.id)} disabled={isSyncing} className={`btn-icon btn-icon-sync ${isSyncing ? 'animate-pulse' : ''}`} title="Sincronizar"><RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} /></button>
-                                            <button onClick={() => startEdit(game)} className="btn-icon btn-icon-edit" title="Editar"><Pencil className="w-3.5 h-3.5" /></button>
-                                            <button onClick={() => removeGame(game.id)} className="btn-icon btn-icon-delete" title="Excluir"><Trash2 className="w-3.5 h-3.5" /></button>
-                                        </>}
-                                    </>}
+                                <PosterCard key={game.id} item={game} onClick={() => setSelectedDetailItem(game)}
+                                    actions={isAdmin ? <>
+                                        <button onClick={() => handleIndividualSync(game.id)} disabled={isSyncing} className={`btn-icon btn-icon-sync ${isSyncing ? 'animate-pulse' : ''}`} title="Sincronizar"><RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} /></button>
+                                        <button onClick={() => startEdit(game)} className="btn-icon btn-icon-edit" title="Editar"><Pencil className="w-3.5 h-3.5" /></button>
+                                        <button onClick={() => removeGame(game.id)} className="btn-icon btn-icon-delete" title="Excluir"><Trash2 className="w-3.5 h-3.5" /></button>
+                                    </> : undefined}
                                 >
                                     <h3 className="text-lg font-bold text-white line-clamp-2 leading-snug">{game.title}</h3>
                                     <span className="text-xs text-slate-300/80 font-medium">{game.platform || 'Multiplataforma'}</span>
