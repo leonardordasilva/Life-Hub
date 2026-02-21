@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { EntertainmentItem, MediaType, MediaStatus } from '../types';
-import { supabase } from '../services/supabaseClient';
+import { supabase } from '../src/integrations/supabase/client';
 import { searchTMDB, getTMDBDetails } from '../services/tmdbService';
 import { searchOpenLibrary, getBookDetails } from '../services/openLibraryService';
 import { translateToPortuguese } from '../services/geminiService';

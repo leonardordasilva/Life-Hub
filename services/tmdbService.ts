@@ -1,4 +1,4 @@
-import { supabase } from './supabaseClient';
+import { supabase } from '../src/integrations/supabase/client';
 
 const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 
