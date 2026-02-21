@@ -300,7 +300,7 @@ export const VacationDashboard: React.FC<VacationDashboardProps> = ({ role }) =>
                 {isAdmin && (
                     <button
                         onClick={openAddTripModal}
-                        className="flex items-center gap-2 px-3 py-1.5 bg-cyan-600/20 hover:bg-cyan-600/40 text-cyan-300 rounded-lg text-sm font-medium transition-all border border-cyan-500/30"
+                        className="btn btn-sm btn-cyan"
                     >
                         <Plus className="w-4 h-4" />
                         Novo Destino
@@ -418,7 +418,7 @@ export const VacationDashboard: React.FC<VacationDashboardProps> = ({ role }) =>
                     {isAdmin && (
                         <button
                             onClick={openAddItemModal}
-                            className="flex items-center gap-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-medium transition-all shadow-lg shadow-cyan-900/20"
+                            className="btn btn-md btn-cyan"
                         >
                             <Plus className="w-4 h-4" />
                             Adicionar {activeTab === 'FLIGHTS' ? 'Passagem' : activeTab === 'HOTELS' ? 'Hospedagem' : 'Passeio'}
@@ -546,17 +546,17 @@ export const VacationDashboard: React.FC<VacationDashboardProps> = ({ role }) =>
                                                 <span className="text-sm text-slate-500 italic">Preço oculto</span>
                                             )}
                                             {isAdmin && (
-                                                <div className="flex gap-2">
+                                                <div className="flex gap-1">
                                                     <button 
                                                         onClick={() => startEditFlight(f)} 
-                                                        className="p-2 text-slate-500 hover:text-cyan-400 transition-colors bg-slate-800/50 hover:bg-slate-800 rounded-lg"
+                                                        className="btn-icon btn-icon-edit"
                                                         title="Editar"
                                                     >
                                                         <Pencil className="w-4 h-4" />
                                                     </button>
                                                     <button 
                                                         onClick={() => removeFlight(f.id)} 
-                                                        className="p-2 text-slate-500 hover:text-red-400 transition-colors bg-slate-800/50 hover:bg-slate-800 rounded-lg"
+                                                        className="btn-icon btn-icon-delete"
                                                         title="Remover"
                                                     >
                                                         <Trash2 className="w-4 h-4" />
@@ -614,17 +614,17 @@ export const VacationDashboard: React.FC<VacationDashboardProps> = ({ role }) =>
                                                     )}
                                                 </div>
                                                 {isAdmin && (
-                                                    <div className="flex gap-2">
+                                                    <div className="flex gap-1">
                                                         <button 
                                                             onClick={() => startEditHotel(h)} 
-                                                            className="p-2 text-slate-500 hover:text-cyan-400 transition-colors bg-slate-800/50 hover:bg-slate-800 rounded-lg"
+                                                            className="btn-icon btn-icon-edit"
                                                             title="Editar"
                                                         >
                                                             <Pencil className="w-4 h-4" />
                                                         </button>
                                                         <button 
                                                             onClick={() => removeHotel(h.id)} 
-                                                            className="p-2 text-slate-500 hover:text-red-400 transition-colors bg-slate-800/50 hover:bg-slate-800 rounded-lg"
+                                                            className="btn-icon btn-icon-delete"
                                                             title="Remover"
                                                         >
                                                             <Trash2 className="w-4 h-4" />
@@ -688,16 +688,16 @@ export const VacationDashboard: React.FC<VacationDashboardProps> = ({ role }) =>
                                             )}
                                         </div>
                                         {isAdmin && (
-                                            <div className="flex gap-2">
+                                            <div className="flex gap-1">
                                                 <button 
                                                     onClick={() => startEditTour(t)} 
-                                                    className="p-2 text-slate-500 hover:text-cyan-400 bg-slate-800/50 hover:bg-slate-800 rounded-lg transition-colors"
+                                                    className="btn-icon btn-icon-edit"
                                                 >
                                                     <Pencil className="w-4 h-4" />
                                                 </button>
                                                 <button 
                                                     onClick={() => removeTour(t.id)} 
-                                                    className="p-2 text-slate-500 hover:text-red-400 bg-slate-800/50 hover:bg-slate-800 rounded-lg transition-colors"
+                                                    className="btn-icon btn-icon-delete"
                                                 >
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
@@ -746,8 +746,8 @@ export const VacationDashboard: React.FC<VacationDashboardProps> = ({ role }) =>
                              </div>
                         </div>
                         <div className="flex gap-4 mt-6">
-                            <button type="button" disabled={submitting} onClick={() => setShowTripModal(false)} className="flex-1 py-3 bg-slate-800 rounded-xl hover:bg-slate-700 transition-colors font-medium disabled:opacity-50">Cancelar</button>
-                            <button type="submit" disabled={submitting} className="flex-1 py-3 bg-cyan-600 rounded-xl hover:bg-cyan-700 transition-colors font-bold text-white flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed">
+                            <button type="button" disabled={submitting} onClick={() => setShowTripModal(false)} className="btn btn-lg btn-ghost flex-1">Cancelar</button>
+                            <button type="submit" disabled={submitting} className="btn btn-lg btn-cyan flex-1">
                                 {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : (editingTripId ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />)} 
                                 {submitting ? 'Salvando...' : (editingTripId ? 'Salvar Alterações' : 'Criar Destino')}
                             </button>
@@ -884,8 +884,8 @@ export const VacationDashboard: React.FC<VacationDashboardProps> = ({ role }) =>
                 )}
 
                 <div className="flex gap-4 mt-6">
-                  <button type="button" disabled={submitting} onClick={() => setShowItemModal(false)} className="flex-1 py-3 bg-slate-800 rounded-xl hover:bg-slate-700 transition-colors font-medium disabled:opacity-50">Cancelar</button>
-                  <button type="submit" disabled={submitting} className="flex-1 py-3 bg-cyan-600 rounded-xl hover:bg-cyan-700 transition-colors font-bold text-white flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed">
+                  <button type="button" disabled={submitting} onClick={() => setShowItemModal(false)} className="btn btn-lg btn-ghost flex-1">Cancelar</button>
+                  <button type="submit" disabled={submitting} className="btn btn-lg btn-cyan flex-1">
                     {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : (editingId ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />)}
                     {submitting ? 'Salvando...' : (editingId ? 'Salvar Alterações' : 'Criar Item')}
                   </button>

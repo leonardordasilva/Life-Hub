@@ -584,7 +584,7 @@ export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = ({ 
                             <input type="text" placeholder="Buscar por título..." value={searchQuery} onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }} className="w-full pl-10 pr-10 py-2.5 bg-slate-800/80 border border-slate-700 rounded-lg text-sm text-white focus:ring-2 focus:ring-pink-500/50 outline-none transition-all" />
                             {searchQuery && <button onClick={() => { setSearchQuery(''); setCurrentPage(1); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"><X className="w-4 h-4" /></button>}
                         </div>
-                        {isAdmin && <button onClick={openModal} className="flex items-center justify-center gap-2 px-4 py-2.5 bg-pink-600 hover:bg-pink-700 text-white rounded-lg font-medium transition-all shadow-lg shadow-pink-900/20 whitespace-nowrap"><Plus className="w-4 h-4" /> Adicionar</button>}
+                        {isAdmin && <button onClick={openModal} className="btn btn-md btn-pink whitespace-nowrap"><Plus className="w-4 h-4" /> Adicionar</button>}
                     </div>
                 </header>
 
@@ -628,16 +628,16 @@ export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = ({ 
                                             <PosterCard key={item.id} item={item}>
                                                 <div className="flex justify-between items-start mb-4">
                                                     <h3 className="text-xl font-bold text-white pr-2 line-clamp-1">{item.title}</h3>
-                                                    <div className="flex gap-1 shrink-0">
-                                                        <button onClick={() => setSelectedDetailItem(item)} className="p-1.5 bg-black/40 hover:bg-pink-500 rounded-lg text-white transition-colors" title="Detalhes"><Info className="w-4 h-4" /></button>
-                                                        {isAdmin && (
-                                                            <>
-                                                                <button onClick={() => handleIndividualSync(item.id)} disabled={isSyncing} className={`p-1.5 bg-black/40 hover:bg-emerald-500 rounded-lg text-white transition-colors ${isSyncing ? 'animate-pulse' : ''}`} title="Sincronizar Dados"><RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} /></button>
-                                                                <button onClick={() => startEdit(item)} className="p-1.5 bg-black/40 hover:bg-cyan-500 rounded-lg text-white transition-colors"><Pencil className="w-4 h-4" /></button>
-                                                                <button onClick={() => removeItem(item.id)} className="p-1.5 bg-black/40 hover:bg-red-500 rounded-lg text-white transition-colors"><Trash2 className="w-4 h-4" /></button>
-                                                            </>
-                                                        )}
-                                                    </div>
+                                    <div className="flex gap-1 shrink-0">
+                                        <button onClick={() => setSelectedDetailItem(item)} className="btn-icon btn-icon-info" title="Detalhes"><Info className="w-4 h-4" /></button>
+                                        {isAdmin && (
+                                            <>
+                                                <button onClick={() => handleIndividualSync(item.id)} disabled={isSyncing} className={`btn-icon btn-icon-sync ${isSyncing ? 'animate-pulse' : ''}`} title="Sincronizar Dados"><RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} /></button>
+                                                <button onClick={() => startEdit(item)} className="btn-icon btn-icon-edit"><Pencil className="w-4 h-4" /></button>
+                                                <button onClick={() => removeItem(item.id)} className="btn-icon btn-icon-delete"><Trash2 className="w-4 h-4" /></button>
+                                            </>
+                                        )}
+                                    </div>
                                                 </div>
                                                 <div className="space-y-4">
                                                     <div>
@@ -898,8 +898,8 @@ export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = ({ 
                                     />
                                 </div>
                                 <div className="flex gap-3">
-                                    <button type="button" onClick={() => { setShowEpisodePrompt(false); setPromptingItem(null); }} className="flex-1 py-3 bg-slate-800 rounded-xl hover:bg-slate-700 transition-colors font-medium">Cancelar</button>
-                                    <button type="submit" disabled={submitting || !newTotalEpisodes} className="flex-1 py-3 bg-emerald-600 rounded-xl hover:bg-emerald-700 transition-colors font-bold text-white flex items-center justify-center gap-2">
+                                    <button type="button" onClick={() => { setShowEpisodePrompt(false); setPromptingItem(null); }} className="btn btn-lg btn-ghost flex-1">Cancelar</button>
+                                    <button type="submit" disabled={submitting || !newTotalEpisodes} className="btn btn-lg btn-success flex-1">
                                         {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} Começar
                                     </button>
                                 </div>
@@ -1094,7 +1094,7 @@ export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = ({ 
                                     <div><label className={labelClass}>Data Lançamento</label><input type="date" disabled={submitting} className={inputClass} value={releaseDate} onChange={e => setReleaseDate(e.target.value)} /></div>
                                 )}
 
-                                <div className="flex gap-4 mt-6"><button type="button" disabled={submitting} onClick={() => setShowModal(false)} className="flex-1 py-3 bg-slate-800 rounded-xl hover:bg-slate-700 transition-colors font-medium">Cancelar</button><button type="submit" disabled={submitting} className="flex-1 py-3 bg-pink-600 rounded-xl hover:bg-pink-700 transition-colors font-bold text-white flex items-center justify-center gap-2">{submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} Salvar</button></div>
+                                <div className="flex gap-4 mt-6"><button type="button" disabled={submitting} onClick={() => setShowModal(false)} className="btn btn-lg btn-ghost flex-1">Cancelar</button><button type="submit" disabled={submitting} className="btn btn-lg btn-pink flex-1">{submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} Salvar</button></div>
                             </form>
                         </div>
                     </div>
