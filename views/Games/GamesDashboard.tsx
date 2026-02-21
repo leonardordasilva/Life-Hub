@@ -410,6 +410,68 @@ export const GamesDashboard: React.FC<GamesDashboardProps> = ({ role }) => {
                     </div>
                 )}
 
+                {/* SYNC ALL MODAL */}
+                {syncState.isOpen && (
+                    <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 z-[100] animate-in zoom-in duration-200">
+                        <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-xl p-8 shadow-2xl overflow-hidden relative">
+                            {syncState.stage === 'PROGRESS' && (
+                                <div className="text-center py-12">
+                                    <RefreshCw className="w-16 h-16 text-violet-500 animate-spin mx-auto mb-6" />
+                                    <h3 className="text-2xl font-bold text-white mb-2">Sincronizando Jogos...</h3>
+                                    <p className="text-slate-400 mb-8">Consultando API RAWG ({syncState.progress}/{syncState.total})</p>
+                                    <div className="w-full bg-slate-800 rounded-full h-2 mb-4"><div className="bg-violet-500 h-2 rounded-full transition-all" style={{ width: `${syncState.total ? (syncState.progress / syncState.total) * 100 : 0}%` }} /></div>
+                                    <p className="text-xs text-violet-400 font-mono italic">Atual: {syncState.currentTitle}</p>
+                                </div>
+                            )}
+                            {syncState.stage === 'REVIEW' && (
+                                <div>
+                                    <h3 className="text-2xl font-bold text-white mb-4">Atualizações encontradas!</h3>
+                                    <p className="text-slate-400 text-sm mb-4">Os jogos abaixo possuem novos metadados disponíveis.</p>
+                                    <div className="max-h-[300px] overflow-y-auto custom-scrollbar space-y-3 mb-6 pr-2">
+                                        {syncState.diffs.map(d => (
+                                            <div key={d.id} className={`p-3 rounded-lg border flex items-center justify-between transition-colors cursor-pointer ${selectedDiffs.has(d.id) ? 'bg-violet-500/10 border-violet-500/50' : 'bg-slate-800 border-white/5'}`} onClick={() => {
+                                                const newSet = new Set(selectedDiffs);
+                                                if (newSet.has(d.id)) newSet.delete(d.id);
+                                                else newSet.add(d.id);
+                                                setSelectedDiffs(newSet);
+                                            }}>
+                                                <div><p className="text-white font-bold text-sm">{d.title}</p><p className="text-xs text-slate-400">Clique para selecionar e atualizar todos os dados.</p></div>
+                                                <div className={`w-5 h-5 rounded border flex items-center justify-center ${selectedDiffs.has(d.id) ? 'bg-violet-600 border-violet-600' : 'border-slate-600'}`}>{selectedDiffs.has(d.id) && <Check className="w-3 h-3 text-white" />}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="flex gap-4">
+                                        <button
+                                            onClick={async () => {
+                                                setSubmitting(true);
+                                                const toApply = syncState.diffs.filter(d => selectedDiffs.has(d.id));
+                                                try {
+                                                    await applyBatchUpdates(toApply);
+                                                    setSyncState(prev => ({ ...prev, stage: 'SUMMARY', diffs: toApply }));
+                                                } finally {
+                                                    setSubmitting(false);
+                                                }
+                                            }}
+                                            disabled={submitting || selectedDiffs.size === 0}
+                                            className="flex-1 py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-bold transition-all shadow-lg flex items-center justify-center gap-2"
+                                        >
+                                            {submitting && <Loader2 className="w-4 h-4 animate-spin" />} Atualizar Selecionados ({selectedDiffs.size})
+                                        </button>
+                                        <button onClick={() => setSyncState(prev => ({ ...prev, isOpen: false }))} className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-medium transition-colors">Cancelar</button>
+                                    </div>
+                                </div>
+                            )}
+                            {syncState.stage === 'SUMMARY' && (
+                                <div className="text-center py-12">
+                                    <div className="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-6"><Check className="w-8 h-8" /></div>
+                                    <h3 className="text-2xl font-bold text-white mb-2">Sincronização Concluída!</h3>
+                                    <p className="text-slate-400 mb-8">{syncState.diffs.length > 0 ? `${syncState.diffs.length} jogos atualizados com sucesso.` : "Tudo atualizado! Nenhuma mudança necessária."}</p>
+                                    <button onClick={() => setSyncState(prev => ({ ...prev, isOpen: false }))} className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-colors">Fechar</button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
 
             </div>
             <style>{`.input-std{width:100%;background:#1e293b;border:1px solid #334155;border-radius:0.5rem;padding:0.5rem 0.75rem;color:white;outline:none;font-size:0.875rem}.input-std:focus{border-color:#8b5cf6;ring:1px solid #8b5cf6}.label-std{display:block;font-size:0.75rem;color:#94a3b8;margin-bottom:0.25rem;font-weight:500}`}</style>
