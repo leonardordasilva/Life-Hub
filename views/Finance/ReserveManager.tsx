@@ -79,14 +79,14 @@ export const ReserveManager: React.FC<ReserveManagerProps> = ({ year, initialAmo
         <div className="w-full md:w-auto bg-slate-800/50 p-4 rounded-xl border border-white/5">
           {isEditing ? (
             <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                <label className="block text-xs text-slate-400 mb-1 font-medium">Editar Saldo Inicial (Ano Anterior)</label>
+                <label className="block text-xs font-semibold text-amber-400/80 uppercase tracking-wider mb-2">Editar Saldo Inicial (Ano Anterior)</label>
                 <div className="flex gap-2">
                     <input
                         type="number"
                         value={amount}
                         disabled={submitting}
                         onChange={(e) => setAmount(e.target.value)}
-                        className="w-32 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-white text-sm focus:outline-none focus:border-emerald-500 disabled:opacity-50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        className="w-36 bg-slate-900/80 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-amber-500/60 focus:ring-2 focus:ring-amber-500/20 disabled:opacity-50 transition-all duration-200 backdrop-blur-sm hover:border-white/20 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         placeholder="0.00"
                         autoFocus
                     />
