@@ -851,6 +851,11 @@ export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = ({ 
                                                                 <CheckCircle className="w-3.5 h-3.5" /> Marcar como Lido
                                                             </button>
                                                         )}
+                                                        {item.status === 'COMPLETED' && (
+                                                            <button onClick={() => updateStatus(item.id, 'WATCHING')} className="w-full py-1.5 rounded-lg text-[11px] font-bold bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600 hover:text-white transition-all border border-indigo-500/20 flex items-center justify-center gap-1.5">
+                                                                <RefreshCw className="w-3.5 h-3.5" /> Releitura
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 )}
                                             </PosterCard>
