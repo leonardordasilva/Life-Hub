@@ -592,10 +592,11 @@ export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = ({ 
                         <p className="text-slate-400 mt-1">Séries, filmes, animes e biblioteca de livros.</p>
                     </div>
                     <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 w-full md:w-auto">
-                        <div className="relative w-full md:w-64">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                            <input type="text" placeholder="Buscar por título..." value={searchQuery} onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }} className="w-full pl-10 pr-10 py-2.5 bg-slate-800/80 border border-slate-700 rounded-lg text-sm text-white focus:ring-2 focus:ring-pink-500/50 outline-none transition-all" />
-                            {searchQuery && <button onClick={() => { setSearchQuery(''); setCurrentPage(1); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"><X className="w-4 h-4" /></button>}
+                        <div className="relative w-full md:w-72 group">
+                            <div className="absolute inset-0 bg-gradient-to-r from-pink-500/20 to-purple-500/20 rounded-xl blur-md opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
+                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-pink-400 transition-colors z-10" />
+                            <input type="text" placeholder="Buscar por título..." value={searchQuery} onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }} className="relative w-full pl-10 pr-10 py-2.5 bg-slate-800/90 backdrop-blur-sm border border-white/10 rounded-xl text-sm text-white focus:border-pink-500/50 focus:ring-2 focus:ring-pink-500/20 outline-none transition-all placeholder:text-slate-500" />
+                            {searchQuery && <button onClick={() => { setSearchQuery(''); setCurrentPage(1); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-pink-400 transition-colors z-10"><X className="w-4 h-4" /></button>}
                         </div>
                         {isAdmin && <button onClick={openModal} className="btn btn-md btn-pink whitespace-nowrap"><Plus className="w-4 h-4" /> Adicionar</button>}
                     </div>

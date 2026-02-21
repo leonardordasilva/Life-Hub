@@ -237,10 +237,11 @@ export const GamesDashboard: React.FC<GamesDashboardProps> = ({ role }) => {
                 <header className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div><h2 className="text-3xl font-bold text-white flex items-center gap-3"><Gamepad2 className="w-8 h-8 text-violet-500" /> Biblioteca de Jogos</h2><p className="text-slate-400 mt-1">Backlog e jogos sendo jogados e finalizados.</p></div>
                     <div className="flex gap-4 w-full md:w-auto">
-                        <div className="relative flex-1 md:w-64">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                            <input type="text" placeholder="Buscar jogo..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-10 pr-10 py-2.5 bg-slate-800/80 border border-slate-700 rounded-lg text-sm text-white focus:ring-2 focus:ring-violet-500/50 outline-none transition-all" />
-                            {searchQuery && <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"><X className="w-4 h-4" /></button>}
+                        <div className="relative flex-1 md:w-72 group">
+                            <div className="absolute inset-0 bg-gradient-to-r from-violet-500/20 to-purple-500/20 rounded-xl blur-md opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
+                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-violet-400 transition-colors z-10" />
+                            <input type="text" placeholder="Buscar jogo..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="relative w-full pl-10 pr-10 py-2.5 bg-slate-800/90 backdrop-blur-sm border border-white/10 rounded-xl text-sm text-white focus:border-violet-500/50 focus:ring-2 focus:ring-violet-500/20 outline-none transition-all placeholder:text-slate-500" />
+                            {searchQuery && <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-violet-400 transition-colors z-10"><X className="w-4 h-4" /></button>}
                         </div>
                         {isAdmin && <button onClick={openModal} className="btn btn-md btn-violet whitespace-nowrap"><Plus className="w-4 h-4" /> Adicionar</button>}
                     </div>
