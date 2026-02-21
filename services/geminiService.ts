@@ -1,4 +1,4 @@
-import { supabase } from './supabaseClient';
+import { supabase } from '../src/integrations/supabase/client';
 
 export const generateText = async (prompt: string, model: string = 'gemini-3-flash-preview') => {
   try {

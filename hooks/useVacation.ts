@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { VacationFlight, VacationHotel, VacationTour, VacationTrip, UserRole } from '../types';
-import { supabase } from '../services/supabaseClient';
+import { supabase } from '../src/integrations/supabase/client';
 
 export const useVacation = (role?: UserRole, onError?: (msg: string) => void) => {
   const [trips, setTrips] = useState<VacationTrip[]>([]);

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FinanceCategory, FinanceTransaction, AnnualReserve, TransactionType, UserRole } from '../types';
-import { supabase } from '../services/supabaseClient';
+import { supabase } from '../src/integrations/supabase/client';
 
 export const useFinanceData = (role: UserRole, onError?: (msg: string) => void) => {
   const [categories, setCategories] = useState<FinanceCategory[]>([]);
