@@ -5,8 +5,9 @@ import { MediaStatus, EntertainmentItem, UserRole } from '../../types';
 import { searchGame, searchGamesMany, getGameDetails, RawgResult } from '../../services/rawgService';
 import { translateToPortuguese } from '../../services/geminiService';
 import { useToast } from '../../components/Toast';
-import { Gamepad2, Plus, Trash2, Search, X, Pencil, PlayCircle, CheckCircle, Clock, Loader2, Trophy, Coffee, Image as ImageIcon, Check, Calendar, Layers, RefreshCw, Star, ArrowRight } from 'lucide-react';
+import { Gamepad2, Plus, Trash2, Search, X, Pencil, PlayCircle, CheckCircle, Clock, Loader2, Trophy, Coffee, Image as ImageIcon, Check, Calendar, Layers, RefreshCw, Star, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 
+const GAMES_PER_PAGE = 8;
 interface PosterCardProps {
     item: EntertainmentItem;
     children: React.ReactNode;
@@ -80,6 +81,7 @@ export const GamesDashboard: React.FC<GamesDashboardProps> = ({ role }) => {
     const [submitting, setSubmitting] = useState(false);
     const [selectedDetailItem, setSelectedDetailItem] = useState<EntertainmentItem | null>(null);
     const [syncingId, setSyncingId] = useState<string | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
 
     // Sync All State
     const [syncState, setSyncState] = useState<{ isOpen: boolean; stage: 'PROGRESS' | 'REVIEW' | 'SUMMARY'; progress: number; total: number; currentTitle: string; diffs: GameSyncDiff[] }>({ isOpen: false, stage: 'PROGRESS', progress: 0, total: 0, currentTitle: '', diffs: [] });
@@ -123,6 +125,11 @@ export const GamesDashboard: React.FC<GamesDashboardProps> = ({ role }) => {
             return a.title.localeCompare(b.title);
         });
     }, [games, searchQuery, filter]);
+
+    // Pagination
+    const totalPages = Math.ceil(filteredGames.length / GAMES_PER_PAGE);
+    const paginatedGames = filteredGames.slice((currentPage - 1) * GAMES_PER_PAGE, currentPage * GAMES_PER_PAGE);
+    React.useEffect(() => { setCurrentPage(1); }, [searchQuery, filter]);
 
     // Actions
     const openModal = () => {
@@ -295,8 +302,9 @@ export const GamesDashboard: React.FC<GamesDashboardProps> = ({ role }) => {
                 {loading ? (
                     <div className="flex justify-center p-12"><Loader2 className="w-8 h-8 text-violet-500 animate-spin" /></div>
                 ) : (
+                    <>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {filteredGames.map(game => {
+                        {paginatedGames.map(game => {
                             const isSyncing = syncingId === game.id;
                             return (
                                 <PosterCard key={game.id} item={game} onClick={() => setSelectedDetailItem(game)}
@@ -322,6 +330,22 @@ export const GamesDashboard: React.FC<GamesDashboardProps> = ({ role }) => {
                             );
                         })}
                     </div>
+                    {totalPages > 1 && (
+                        <div className="flex items-center justify-center gap-2 mt-8">
+                            <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                                <ChevronLeft className="w-5 h-5" />
+                            </button>
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                                <button key={p} onClick={() => setCurrentPage(p)} className={`w-9 h-9 rounded-lg text-sm font-semibold transition-all ${p === currentPage ? 'bg-violet-600 text-white shadow-lg shadow-violet-900/30' : 'text-slate-400 hover:text-white hover:bg-white/10'}`}>
+                                    {p}
+                                </button>
+                            ))}
+                            <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                                <ChevronRight className="w-5 h-5" />
+                            </button>
+                        </div>
+                    )}
+                    </>
                 )}
 
                 {/* DETAILS MODAL */}
