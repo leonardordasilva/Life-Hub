@@ -1,17 +1,10 @@
-// Safe re-export of the Supabase client with fallback for missing env vars
+// Safe Supabase client with direct publishable credentials
 import { createClient } from '@supabase/supabase-js';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
-const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://miwmgwcddhsxayglguuc.supabase.co';
+const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1pd21nd2NkZGhzeGF5Z2xndXVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE2NzkyMzEsImV4cCI6MjA4NzI1NTIzMX0.n7rEqWE50Ga9EklT7wrVAQ4FwXSFvEWNOqc2E0SJgIY';
 
-if (!SUPABASE_URL || !SUPABASE_KEY) {
-  console.warn('Supabase environment variables not configured. Backend features will not work.');
-}
-
-const validUrl = SUPABASE_URL && SUPABASE_URL.startsWith('http') ? SUPABASE_URL : 'https://placeholder.supabase.co';
-const validKey = SUPABASE_KEY || 'placeholder-key';
-
-export const supabase: any = createClient(validUrl, validKey, {
+export const supabase: any = createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: {
     storage: typeof window !== 'undefined' ? localStorage : undefined,
     persistSession: true,
