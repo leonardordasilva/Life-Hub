@@ -2,6 +2,13 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders, handleCors } from "../_shared/cors.ts";
 import { fetchWithTimeout } from "../_shared/fetch.ts";
 
+function validateString(value: unknown, maxLen: number): string | null {
+    if (typeof value !== 'string') return null;
+    const trimmed = value.trim();
+    if (trimmed.length === 0 || trimmed.length > maxLen) return null;
+    return trimmed;
+}
+
 serve(async (req) => {
     const cors = handleCors(req);
     if (cors) return cors;
@@ -22,9 +29,12 @@ serve(async (req) => {
 
         switch (action) {
             case "rawg_search": {
-                const query = url.searchParams.get("query") || payload.query;
-                const pageSize = url.searchParams.get("page_size") || payload.page_size || 10;
-                if (!query) throw new Error("Query required");
+                const query = validateString(url.searchParams.get("query") || payload.query, 500);
+                const pageSizeRaw = url.searchParams.get("page_size") || payload.page_size || "10";
+                const pageSize = Math.min(Math.max(parseInt(String(pageSizeRaw), 10) || 10, 1), 40);
+                if (!query) {
+                    return new Response(JSON.stringify({ error: "Invalid query" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+                }
 
                 const targetUrl = `https://api.rawg.io/api/games?key=${RAWG_API_KEY}&search=${encodeURIComponent(query)}&page_size=${pageSize}`;
                 const response = await fetchWithTimeout(targetUrl);
@@ -33,8 +43,10 @@ serve(async (req) => {
             }
 
             case "rawg_details": {
-                const id = url.searchParams.get("id") || payload.id;
-                if (!id) throw new Error("Invalid ID");
+                const id = validateString(url.searchParams.get("id") || payload.id, 20);
+                if (!id || !/^[a-zA-Z0-9_-]+$/.test(id)) {
+                    return new Response(JSON.stringify({ error: "Invalid ID" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+                }
 
                 const targetUrl = `https://api.rawg.io/api/games/${id}?key=${RAWG_API_KEY}`;
                 const response = await fetchWithTimeout(targetUrl);
@@ -49,8 +61,8 @@ serve(async (req) => {
                 });
         }
     } catch (err: any) {
-        console.error(err);
-        return new Response(JSON.stringify({ error: err.message || "Internal server error" }), {
+        console.error("rawg-proxy error:", err);
+        return new Response(JSON.stringify({ error: "An error occurred processing your request" }), {
             status: 500,
             headers: { ...corsHeaders, "Content-Type": "application/json" },
         });

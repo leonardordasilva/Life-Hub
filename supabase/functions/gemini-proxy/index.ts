@@ -3,6 +3,13 @@ import { corsHeaders, handleCors } from "../_shared/cors.ts";
 
 const LOVABLE_AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 
+function validateString(value: unknown, maxLen: number): string | null {
+    if (typeof value !== 'string') return null;
+    const trimmed = value.trim();
+    if (trimmed.length === 0 || trimmed.length > maxLen) return null;
+    return trimmed;
+}
+
 serve(async (req) => {
     const cors = handleCors(req);
     if (cors) return cors;
@@ -21,16 +28,22 @@ serve(async (req) => {
 
         const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY") || "";
         if (!LOVABLE_API_KEY) {
-            return new Response(JSON.stringify({ error: "AI API key not configured" }), {
-                status: 500,
+            return new Response(JSON.stringify({ error: "Service unavailable" }), {
+                status: 503,
                 headers: { ...corsHeaders, "Content-Type": "application/json" },
             });
         }
 
         switch (action) {
             case "gemini_generate": {
-                const { prompt, model } = payload;
-                if (!prompt) throw new Error("Missing prompt");
+                const prompt = validateString(payload.prompt, 5000);
+                if (!prompt) {
+                    return new Response(JSON.stringify({ error: "Invalid prompt (1-5000 chars)" }), {
+                        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+                    });
+                }
+
+                const model = validateString(payload.model, 100) || "google/gemini-3-flash-preview";
 
                 const response = await fetch(LOVABLE_AI_URL, {
                     method: "POST",
@@ -39,7 +52,7 @@ serve(async (req) => {
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
-                        model: model || "google/gemini-3-flash-preview",
+                        model,
                         messages: [{ role: "user", content: prompt }],
                     }),
                 });
@@ -55,7 +68,7 @@ serve(async (req) => {
                             status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
                         });
                     }
-                    throw new Error(`AI gateway error: ${response.status}`);
+                    throw new Error("AI service error");
                 }
 
                 const data = await response.json();
@@ -64,9 +77,9 @@ serve(async (req) => {
             }
 
             case "gemini_translate": {
-                const { text } = payload;
-                if (!text || text.trim().length === 0) {
-                    return new Response(JSON.stringify({ text: text || "" }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+                const text = validateString(payload.text, 5000);
+                if (!text) {
+                    return new Response(JSON.stringify({ text: payload.text || "" }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
                 }
 
                 const response = await fetch(LOVABLE_AI_URL, {
@@ -94,8 +107,13 @@ serve(async (req) => {
             }
 
             case "gemini_entertainment_info": {
-                const { title, type } = payload;
-                if (!title || !type) throw new Error("Missing title or type");
+                const title = validateString(payload.title, 500);
+                const type = validateString(payload.type, 50);
+                if (!title || !type) {
+                    return new Response(JSON.stringify({ error: "Missing or invalid title/type" }), {
+                        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+                    });
+                }
 
                 const response = await fetch(LOVABLE_AI_URL, {
                     method: "POST",
@@ -114,7 +132,7 @@ Return a JSON object with the following fields exactly and only:
                     }),
                 });
 
-                if (!response.ok) throw new Error(`AI gateway error: ${response.status}`);
+                if (!response.ok) throw new Error("AI service error");
 
                 const data = await response.json();
                 let extracted = data?.choices?.[0]?.message?.content || "null";
@@ -135,8 +153,8 @@ Return a JSON object with the following fields exactly and only:
                 });
         }
     } catch (err: any) {
-        console.error(err);
-        return new Response(JSON.stringify({ error: err.message || "Internal server error" }), {
+        console.error("gemini-proxy error:", err);
+        return new Response(JSON.stringify({ error: "An error occurred processing your request" }), {
             status: 500,
             headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
