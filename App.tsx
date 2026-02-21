@@ -6,7 +6,7 @@ import { EntertainmentDashboard } from './views/Entertainment/EntertainmentDashb
 import { GamesDashboard } from './views/Games/GamesDashboard';
 import { SetupScreen } from './views/SetupScreen';
 import { LoginScreen } from './views/LoginScreen';
-import { AppSection, UserRole } from './types';
+import { AppSection } from './types';
 import { 
   LayoutDashboard, 
   Wallet, 
@@ -19,6 +19,7 @@ import {
   Settings,
   LogOut
 } from 'lucide-react';
+import { useAuth } from './hooks/useAuth';
 import { supabase } from './services/supabaseClient';
 
 const App: React.FC = () => {
@@ -28,26 +29,17 @@ const App: React.FC = () => {
   const [retryTrigger, setRetryTrigger] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
-  // Auth State
-  const [userRole, setUserRole] = useState<UserRole | null>(null);
+  const { user, userRole, loading: authLoading, signIn, signUp, signOut } = useAuth();
 
   useEffect(() => {
+    if (!user) return; // Don't check DB until authenticated
+    
     const checkDatabase = async () => {
       try {
-        // app_config is now locked down (service role only), so check other tables instead
-        const { error: catError } = await supabase.from('finance_categories').select('id').limit(1);
-        // If this fails, DB is not ready
-
         const { error: financeError } = await supabase.from('finance_categories').select('id').limit(1);
-        if (financeError) throw financeError;
+        // For non-admin users, RLS will block this - that's OK
+        if (financeError && !financeError.message.includes('row-level security')) throw financeError;
 
-        const { error: vacationError } = await supabase.from('vacation_flights').select('year').limit(1);
-        if (vacationError) throw vacationError;
-
-        const { error: tourError } = await supabase.from('vacation_tours').select('price').limit(1);
-        if (tourError) throw tourError;
-        
-        // Verifica uma das novas tabelas de entretenimento
         const { error: entError } = await supabase.from('ent_series').select('title').limit(1);
         if (entError) throw entError;
 
@@ -60,7 +52,7 @@ const App: React.FC = () => {
     };
 
     checkDatabase();
-  }, [retryTrigger]);
+  }, [retryTrigger, user]);
 
   const handleRetry = () => {
     setIsDbReady(null);
@@ -68,10 +60,22 @@ const App: React.FC = () => {
     setRetryTrigger(prev => prev + 1);
   };
 
-  const handleLogout = () => {
-      setUserRole(null);
-      setCurrentSection(AppSection.HOME);
+  const handleLogout = async () => {
+    await signOut();
+    setCurrentSection(AppSection.HOME);
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <Loader2 className="w-10 h-10 text-cyan-500 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user || !userRole) {
+    return <LoginScreen onSignIn={signIn} onSignUp={signUp} />;
+  }
 
   if (isDbReady === null) {
     return (
@@ -83,10 +87,6 @@ const App: React.FC = () => {
 
   if (isDbReady === false) {
     return <SetupScreen error={dbError} onRetry={handleRetry} />;
-  }
-
-  if (!userRole) {
-      return <LoginScreen onLogin={setUserRole} />;
   }
 
   const renderSection = () => {
