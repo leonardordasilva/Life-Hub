@@ -526,7 +526,7 @@ export const VacationDashboard: React.FC<VacationDashboardProps> = ({ role }) =>
                                                 <div className="grid grid-cols-3 gap-4 text-sm">
                                                     <div>
                                                         <div className="text-slate-500 text-xs">Partida</div>
-                                                        <div className="text-white font-medium">{formatDateTime(f.returnDepartureTime)}</div>
+                                                        <div className="text-white font-medium">{formatDateTime(f.returnDepartureTime ?? '')}</div>
                                                     </div>
                                                     <div className="text-center">
                                                         <div className="text-slate-500 text-xs">Duração</div>

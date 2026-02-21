@@ -38,9 +38,9 @@ const PosterCard: React.FC<PosterCardProps> = ({ item, children }) => {
                             Jogando
                         </div>
                     ) : (<span></span>)}
-                    {item.rating > 0 ? (
+                    {(item.rating ?? 0) > 0 ? (
                         <div className="px-2 py-1 bg-amber-500/90 text-white text-xs font-bold rounded-lg shadow-lg flex items-center gap-1">
-                            <Star className="w-3 h-3 fill-current" /> {item.rating.toFixed(1)}
+                            <Star className="w-3 h-3 fill-current" /> {(item.rating ?? 0).toFixed(1)}
                         </div>
                     ) : null}
                 </div>
@@ -295,9 +295,9 @@ export const GamesDashboard: React.FC<GamesDashboardProps> = ({ role }) => {
                                 <div className="mb-6">
                                     <div className="flex items-center gap-3">
                                         <span className="px-3 py-1 bg-violet-600/20 text-violet-400 border border-violet-500/30 rounded-full text-xs font-bold uppercase tracking-widest">GAMES</span>
-                                        {selectedDetailItem.rating > 0 && (
+                                        {(selectedDetailItem.rating ?? 0) > 0 && (
                                             <span className="flex items-center gap-1 text-amber-400 font-bold bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 text-sm">
-                                                <Star className="w-3.5 h-3.5 fill-current" /> {selectedDetailItem.rating.toFixed(1)}
+                                                <Star className="w-3.5 h-3.5 fill-current" /> {(selectedDetailItem.rating ?? 0).toFixed(1)}
                                             </span>
                                         )}
                                     </div>
