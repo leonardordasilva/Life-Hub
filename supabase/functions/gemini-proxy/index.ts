@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders, handleCors } from "../_shared/cors.ts";
-import { fetchWithTimeout } from "../_shared/fetch.ts";
+
+const LOVABLE_AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 
 serve(async (req) => {
     const cors = handleCors(req);
@@ -18,23 +19,47 @@ serve(async (req) => {
             } catch (_e) { }
         }
 
-        const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY") || Deno.env.get("API_KEY") || "";
+        const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY") || "";
+        if (!LOVABLE_API_KEY) {
+            return new Response(JSON.stringify({ error: "AI API key not configured" }), {
+                status: 500,
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+            });
+        }
 
         switch (action) {
             case "gemini_generate": {
                 const { prompt, model } = payload;
                 if (!prompt) throw new Error("Missing prompt");
 
-                const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model || "gemini-1.5-flash-latest"}:generateContent?key=${GEMINI_API_KEY}`;
-                const response = await fetchWithTimeout(targetUrl, {
+                const response = await fetch(LOVABLE_AI_URL, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+                        "Content-Type": "application/json",
+                    },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: prompt }] }],
+                        model: model || "google/gemini-3-flash-preview",
+                        messages: [{ role: "user", content: prompt }],
                     }),
                 });
+
+                if (!response.ok) {
+                    if (response.status === 429) {
+                        return new Response(JSON.stringify({ error: "Rate limit exceeded, try again later" }), {
+                            status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+                        });
+                    }
+                    if (response.status === 402) {
+                        return new Response(JSON.stringify({ error: "AI credits exhausted" }), {
+                            status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+                        });
+                    }
+                    throw new Error(`AI gateway error: ${response.status}`);
+                }
+
                 const data = await response.json();
-                const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+                const text = data?.choices?.[0]?.message?.content || "";
                 return new Response(JSON.stringify({ text }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
             }
 
@@ -44,16 +69,27 @@ serve(async (req) => {
                     return new Response(JSON.stringify({ text: text || "" }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
                 }
 
-                const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
-                const response = await fetchWithTimeout(targetUrl, {
+                const response = await fetch(LOVABLE_AI_URL, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+                        "Content-Type": "application/json",
+                    },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: `Translate the following text to Brazilian Portuguese (pt-BR). Maintain the original tone, line breaks, and formatting. If the text is already in Portuguese, return it exactly as is: \n\n${text}` }] }],
+                        model: "google/gemini-3-flash-preview",
+                        messages: [{
+                            role: "user",
+                            content: `Translate the following text to Brazilian Portuguese (pt-BR). Maintain the original tone, line breaks, and formatting. If the text is already in Portuguese, return it exactly as is: \n\n${text}`
+                        }],
                     }),
                 });
+
+                if (!response.ok) {
+                    return new Response(JSON.stringify({ text }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+                }
+
                 const data = await response.json();
-                const translated = data?.candidates?.[0]?.content?.parts?.[0]?.text || text;
+                const translated = data?.choices?.[0]?.message?.content || text;
                 return new Response(JSON.stringify({ text: translated }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
             }
 
@@ -61,22 +97,27 @@ serve(async (req) => {
                 const { title, type } = payload;
                 if (!title || !type) throw new Error("Missing title or type");
 
-                const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
-                const response = await fetchWithTimeout(targetUrl, {
+                const response = await fetch(LOVABLE_AI_URL, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+                        "Content-Type": "application/json",
+                    },
                     body: JSON.stringify({
-                        contents: [{
-                            parts: [{
-                                text: `Find detailed information about the ${type} titled "${title}". 
-            Return a JSON object with the following fields exactly and only:
-            {"title": "string", "posterUrl": "string or null", "releaseDate": "YYYY-MM-DD or null", "totalSeasons": number or null, "totalEpisodes": number or null, "author": "string or null"}` }]
+                        model: "google/gemini-3-flash-preview",
+                        messages: [{
+                            role: "user",
+                            content: `Find detailed information about the ${type} titled "${title}". 
+Return a JSON object with the following fields exactly and only:
+{"title": "string", "posterUrl": "string or null", "releaseDate": "YYYY-MM-DD or null", "totalSeasons": number or null, "totalEpisodes": number or null, "author": "string or null"}`
                         }],
                     }),
                 });
-                const data = await response.json();
-                let extracted = data?.candidates?.[0]?.content?.parts?.[0]?.text || "null";
 
+                if (!response.ok) throw new Error(`AI gateway error: ${response.status}`);
+
+                const data = await response.json();
+                let extracted = data?.choices?.[0]?.message?.content || "null";
                 extracted = extracted.replace(/```json/g, "").replace(/```/g, "").trim();
 
                 let result = null;
