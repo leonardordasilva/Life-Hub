@@ -9,44 +9,48 @@ import { Gamepad2, Plus, Trash2, Search, X, Pencil, PlayCircle, CheckCircle, Clo
 interface PosterCardProps {
     item: EntertainmentItem;
     children: React.ReactNode;
+    actions?: React.ReactNode;
 }
 
-const PosterCard: React.FC<PosterCardProps> = ({ item, children }) => {
+const PosterCard: React.FC<PosterCardProps> = ({ item, children, actions }) => {
     const isPlaying = item.status === 'WATCHING';
-    const borderColor = isPlaying ? 'border-violet-500 shadow-[0_0_15px_rgba(139,92,246,0.3)]' : 'border-white/10 hover:border-violet-500/30';
+    const borderColor = isPlaying ? 'border-violet-500/50 shadow-[0_0_20px_rgba(139,92,246,0.15)]' : 'border-white/5 hover:border-white/15';
 
     return (
-        <div className={`relative group overflow-hidden rounded-xl bg-slate-800 border transition-all min-h-[220px] flex flex-col ${borderColor}`}>
+        <div className={`relative group overflow-hidden rounded-2xl bg-slate-800/80 border transition-all duration-300 min-h-[340px] flex flex-col ${borderColor}`}>
             {item.posterUrl ? (
                 <div className="absolute inset-0 z-0">
-                    <img
-                        src={item.posterUrl}
-                        alt={item.title}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-60 group-hover:opacity-40"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/80 to-transparent" />
+                    <img src={item.posterUrl} alt={item.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-50 group-hover:opacity-30" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/70 to-transparent" />
                 </div>
             ) : (
                 <div className="absolute inset-0 bg-gradient-to-br from-violet-900/20 to-slate-900 z-0" />
             )}
 
-            <div className="relative z-10 p-5 flex flex-col h-full">
-                <div className="flex justify-between w-full mb-2">
-                    {isPlaying ? (
-                        <div className="px-2 py-1 bg-violet-600 text-white text-xs font-bold rounded-full shadow-lg flex items-center gap-1 animate-in fade-in zoom-in">
-                            <Gamepad2 className="w-3 h-3 fill-current" />
-                            Jogando
-                        </div>
-                    ) : (<span></span>)}
-                    {(item.rating ?? 0) > 0 ? (
-                        <div className="px-2 py-1 bg-amber-500/90 text-white text-xs font-bold rounded-lg shadow-lg flex items-center gap-1">
-                            <Star className="w-3 h-3 fill-current" /> {(item.rating ?? 0).toFixed(1)}
-                        </div>
-                    ) : null}
+            {/* Hover Action Overlay */}
+            {actions && (
+                <div className="absolute top-3 right-3 z-30 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0">
+                    {actions}
                 </div>
-                <div className="flex-1 flex flex-col justify-between">
-                    {children}
-                </div>
+            )}
+
+            {/* Top Badges */}
+            <div className="relative z-10 p-4 flex justify-between items-start">
+                {isPlaying ? (
+                    <div className="px-2.5 py-1 bg-violet-600/90 text-white text-[10px] font-bold rounded-full shadow-lg flex items-center gap-1 uppercase tracking-wider backdrop-blur-sm">
+                        <Gamepad2 className="w-3 h-3" /> Jogando
+                    </div>
+                ) : (<span />)}
+                {(item.rating ?? 0) > 0 && (
+                    <div className="px-2 py-1 bg-black/50 backdrop-blur-sm text-amber-400 text-xs font-bold rounded-lg flex items-center gap-1 border border-amber-500/20">
+                        <Star className="w-3 h-3 fill-current" /> {(item.rating ?? 0).toFixed(1)}
+                    </div>
+                )}
+            </div>
+
+            {/* Content pushed to bottom */}
+            <div className="relative z-10 mt-auto p-5 pt-8 flex flex-col gap-3">
+                {children}
             </div>
         </div>
     );
@@ -255,27 +259,28 @@ export const GamesDashboard: React.FC<GamesDashboardProps> = ({ role }) => {
                         {filteredGames.map(game => {
                             const isSyncing = syncingId === game.id;
                             return (
-                                <PosterCard key={game.id} item={game}>
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div className="flex flex-col"><h3 className="text-lg font-bold text-white line-clamp-1">{game.title}</h3><span className="text-xs text-slate-300 font-medium bg-black/40 px-2 py-0.5 rounded w-fit mt-1 backdrop-blur-sm">{game.platform || 'Multi'}</span></div>
-                                        <div className="flex gap-1 shrink-0 bg-black/40 backdrop-blur-sm rounded-lg p-1">
-                                            <button onClick={() => setSelectedDetailItem(game)} className="btn-icon btn-icon-info"><Info className="w-3.5 h-3.5" /></button>
-                                            {isAdmin && (
-                                                <>
-                                                    <button onClick={() => handleIndividualSync(game.id)} disabled={isSyncing} className={`btn-icon btn-icon-sync ${isSyncing ? 'animate-pulse' : ''}`} title="Sincronizar Dados"><RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} /></button>
-                                                    <button onClick={() => startEdit(game)} className="btn-icon btn-icon-edit"><Pencil className="w-3.5 h-3.5" /></button>
-                                                    <button onClick={() => removeGame(game.id)} className="btn-icon btn-icon-delete"><Trash2 className="w-3.5 h-3.5" /></button>
-                                                </>
-                                            )}
-                                        </div>
+                                <PosterCard key={game.id} item={game}
+                                    actions={<>
+                                        <button onClick={() => setSelectedDetailItem(game)} className="btn-icon btn-icon-info" title="Detalhes"><Info className="w-3.5 h-3.5" /></button>
+                                        {isAdmin && <>
+                                            <button onClick={() => handleIndividualSync(game.id)} disabled={isSyncing} className={`btn-icon btn-icon-sync ${isSyncing ? 'animate-pulse' : ''}`} title="Sincronizar"><RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} /></button>
+                                            <button onClick={() => startEdit(game)} className="btn-icon btn-icon-edit" title="Editar"><Pencil className="w-3.5 h-3.5" /></button>
+                                            <button onClick={() => removeGame(game.id)} className="btn-icon btn-icon-delete" title="Excluir"><Trash2 className="w-3.5 h-3.5" /></button>
+                                        </>}
+                                    </>}
+                                >
+                                    <h3 className="text-lg font-bold text-white line-clamp-2 leading-snug">{game.title}</h3>
+                                    <span className="text-xs text-slate-300/80 font-medium">{game.platform || 'Multiplataforma'}</span>
+                                    
+                                    <div className="flex items-center justify-between mt-1">
+                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${game.status === 'COMPLETED' ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' : game.status === 'WATCHING' ? 'text-violet-400 bg-violet-500/10 border-violet-500/20' : game.status === 'CASUAL' ? 'text-sky-400 bg-sky-500/10 border-sky-500/20' : 'text-slate-400 bg-white/5 border-white/10'}`}>{getStatusLabel(game.status)}</span>
+                                        {isAdmin && game.status === 'WATCHING' && <button onClick={() => updateGameStatus(game.id, 'COMPLETED')} className="text-[10px] font-bold text-emerald-400 hover:text-white flex items-center gap-1 transition-colors"><CheckCircle className="w-3 h-3" /> Zerar</button>}
                                     </div>
-                                    <div className="mt-auto pt-4 border-t border-white/10 flex flex-col gap-3">
-                                        <div className="flex justify-between items-center">
-                                            <div className={`px-2 py-1 rounded text-[10px] font-bold border ${game.status === 'COMPLETED' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : game.status === 'WATCHING' ? 'bg-violet-500/20 text-violet-400 border-violet-500/30' : 'bg-slate-700/50 text-slate-400 border-slate-600'}`}>{getStatusLabel(game.status)}</div>
-                                            {isAdmin && game.status === 'WATCHING' && <button onClick={() => updateGameStatus(game.id, 'COMPLETED')} className="text-[10px] font-bold text-emerald-400 flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Zerar</button>}
-                                        </div>
-                                        {game.status === 'PENDING' && isAdmin && <button onClick={() => updateGameStatus(game.id, 'WATCHING')} className="w-full py-1.5 rounded text-[10px] font-bold bg-violet-600/80 text-white hover:bg-violet-600 transition-all flex items-center justify-center gap-1"><PlayCircle className="w-3 h-3" /> JOGAR</button>}
-                                    </div>
+                                    {game.status === 'PENDING' && isAdmin && (
+                                        <button onClick={() => updateGameStatus(game.id, 'WATCHING')} className="w-full py-1.5 rounded-lg text-[11px] font-bold bg-violet-600/20 text-violet-400 hover:bg-violet-600 hover:text-white transition-all border border-violet-500/20 flex items-center justify-center gap-1.5">
+                                            <PlayCircle className="w-3.5 h-3.5" /> JOGAR
+                                        </button>
+                                    )}
                                 </PosterCard>
                             );
                         })}

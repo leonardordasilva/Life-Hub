@@ -24,50 +24,54 @@ const StatCard = ({ label, value, icon, colorClass }: { label: string, value: nu
 interface PosterCardProps {
     item: EntertainmentItem;
     children: React.ReactNode;
+    actions?: React.ReactNode;
     overlayColor?: string;
 }
 
 const PosterCard: React.FC<PosterCardProps> = ({
     item,
     children,
-    overlayColor = "from-slate-900 via-slate-900/80"
+    actions,
+    overlayColor = "from-slate-900 via-slate-900/70"
 }) => {
     const isWatching = item.status === 'WATCHING';
-    const borderColor = isWatching ? 'border-green-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]' : 'border-white/10 hover:border-pink-500/30';
+    const borderColor = isWatching ? 'border-green-500/50 shadow-[0_0_20px_rgba(16,185,129,0.15)]' : 'border-white/5 hover:border-white/15';
 
     return (
-        <div className={`relative group overflow-hidden rounded-xl bg-slate-800 border transition-all min-h-[220px] flex flex-col ${borderColor}`}>
+        <div className={`relative group overflow-hidden rounded-2xl bg-slate-800/80 border transition-all duration-300 min-h-[360px] flex flex-col ${borderColor}`}>
             {item.posterUrl ? (
                 <div className="absolute inset-0 z-0">
-                    <img
-                        src={item.posterUrl}
-                        alt={item.title}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-60 group-hover:opacity-40"
-                    />
+                    <img src={item.posterUrl} alt={item.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-50 group-hover:opacity-30" />
                     <div className={`absolute inset-0 bg-gradient-to-t ${overlayColor} to-transparent`} />
                 </div>
             ) : (
-                <div className="absolute inset-0 bg-white/5 z-0" />
+                <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900 z-0" />
             )}
 
-            <div className="relative z-10 p-5 flex flex-col h-full">
-                <div className="flex justify-between w-full mb-2">
-                    {isWatching ? (
-                        <div className="px-2 py-1 bg-green-500 text-white text-xs font-bold rounded-full shadow-lg flex items-center gap-1 animate-in fade-in zoom-in">
-                            <PlayCircle className="w-3 h-3 fill-current" />
-                            Vendo Agora
-                        </div>
-                    ) : (<span></span>)}
-                    {(item.rating ?? 0) > 0 ? (
-                        <div className="px-2 py-1 bg-amber-500/90 text-white text-xs font-bold rounded-lg shadow-lg flex items-center gap-1">
-                            <Star className="w-3 h-3 fill-current" /> {(item.rating ?? 0).toFixed(1)}
-                        </div>
-                    ) : null}
+            {/* Hover Action Overlay */}
+            {actions && (
+                <div className="absolute top-3 right-3 z-30 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0">
+                    {actions}
                 </div>
+            )}
 
-                <div className="flex-1 flex flex-col justify-between">
-                    {children}
-                </div>
+            {/* Top Badges */}
+            <div className="relative z-10 p-4 flex justify-between items-start">
+                {isWatching ? (
+                    <div className="px-2.5 py-1 bg-green-500/90 text-white text-[10px] font-bold rounded-full shadow-lg flex items-center gap-1 uppercase tracking-wider backdrop-blur-sm">
+                        <PlayCircle className="w-3 h-3" /> Vendo
+                    </div>
+                ) : (<span />)}
+                {(item.rating ?? 0) > 0 && (
+                    <div className="px-2 py-1 bg-black/50 backdrop-blur-sm text-amber-400 text-xs font-bold rounded-lg flex items-center gap-1 border border-amber-500/20">
+                        <Star className="w-3 h-3 fill-current" /> {(item.rating ?? 0).toFixed(1)}
+                    </div>
+                )}
+            </div>
+
+            {/* Content pushed to bottom */}
+            <div className="relative z-10 mt-auto p-5 pt-8 flex flex-col gap-3">
+                {children}
             </div>
         </div>
     );
@@ -625,54 +629,47 @@ export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = ({ 
                                         const hasStartedCurrentSeason = (item.currentSeasonWatchedEpisodes || 0) > 0;
 
                                         return (
-                                            <PosterCard key={item.id} item={item}>
-                                                <div className="flex justify-between items-start mb-4">
-                                                    <h3 className="text-xl font-bold text-white pr-2 line-clamp-1">{item.title}</h3>
-                                    <div className="flex gap-1 shrink-0 bg-black/30 backdrop-blur-sm rounded-lg p-1">
-                                        <button onClick={() => setSelectedDetailItem(item)} className="btn-icon btn-icon-info" title="Detalhes"><Info className="w-3.5 h-3.5" /></button>
-                                        {isAdmin && (
-                                            <>
-                                                <button onClick={() => handleIndividualSync(item.id)} disabled={isSyncing} className={`btn-icon btn-icon-sync ${isSyncing ? 'animate-pulse' : ''}`} title="Sincronizar Dados"><RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} /></button>
-                                                <button onClick={() => startEdit(item)} className="btn-icon btn-icon-edit"><Pencil className="w-3.5 h-3.5" /></button>
-                                                <button onClick={() => removeItem(item.id)} className="btn-icon btn-icon-delete"><Trash2 className="w-3.5 h-3.5" /></button>
-                                            </>
-                                        )}
-                                    </div>
+                                            <PosterCard key={item.id} item={item}
+                                                actions={<>
+                                                    <button onClick={() => setSelectedDetailItem(item)} className="btn-icon btn-icon-info" title="Detalhes"><Info className="w-3.5 h-3.5" /></button>
+                                                    {isAdmin && <>
+                                                        <button onClick={() => handleIndividualSync(item.id)} disabled={isSyncing} className={`btn-icon btn-icon-sync ${isSyncing ? 'animate-pulse' : ''}`} title="Sincronizar"><RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} /></button>
+                                                        <button onClick={() => startEdit(item)} className="btn-icon btn-icon-edit" title="Editar"><Pencil className="w-3.5 h-3.5" /></button>
+                                                        <button onClick={() => removeItem(item.id)} className="btn-icon btn-icon-delete" title="Excluir"><Trash2 className="w-3.5 h-3.5" /></button>
+                                                    </>}
+                                                </>}
+                                            >
+                                                <h3 className="text-lg font-bold text-white line-clamp-2 leading-snug">{item.title}</h3>
+                                                
+                                                {item.status === 'WATCHING' && (
+                                                    <p className="text-[11px] text-pink-300 font-semibold tracking-wide">
+                                                        T{item.currentSeason || 1} • E{item.currentSeasonWatchedEpisodes || 0}{item.currentSeasonTotalEpisodes ? ` / ${item.currentSeasonTotalEpisodes}` : ''}
+                                                    </p>
+                                                )}
+
+                                                <div>
+                                                    <div className="flex justify-between text-xs text-slate-400 mb-1.5">
+                                                        <span>{item.watchedSeasons || 0} / {item.totalSeasons || 0} temporadas</span>
+                                                        {remaining > 0 ? <span className="text-pink-400">{remaining} restante{remaining > 1 ? 's' : ''}</span> : <span className="text-emerald-400">Completa</span>}
+                                                    </div>
+                                                    <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden"><div className={`h-1.5 rounded-full transition-all duration-500 ${percent >= 100 ? 'bg-emerald-500' : 'bg-pink-500'}`} style={{ width: `${Math.max(percent, 2)}%` }} /></div>
                                                 </div>
-                                                <div className="space-y-4">
-                                                    <div>
-                                                        <div className="flex justify-between text-sm text-slate-300 font-medium mb-1">
-                                                            <span>Total</span>
-                                                            <span className="text-white font-bold">{item.watchedSeasons} / {item.totalSeasons} Temps</span>
-                                                        </div>
+
+                                                {isAdmin && (
+                                                    <div className="flex gap-2 mt-1">
                                                         {item.status === 'WATCHING' && (
-                                                            <div className="text-xs text-pink-300 mb-2 font-bold uppercase tracking-tight">
-                                                                Último: T{item.currentSeason || 1} • E{item.currentSeasonWatchedEpisodes || 0}
-                                                                {item.currentSeasonTotalEpisodes ? ` / ${item.currentSeasonTotalEpisodes}` : ''}
-                                                            </div>
+                                                            <>
+                                                                <button onClick={() => incrementProgress(item)} className="flex-1 py-1.5 bg-pink-600/20 hover:bg-pink-600 text-pink-400 hover:text-white rounded-lg text-[11px] font-bold transition-all border border-pink-500/20 flex items-center justify-center gap-1"><PlayCircle className="w-3 h-3" /> +1 Ep</button>
+                                                                <button onClick={() => updateStatus(item.id, 'PENDING')} className="py-1.5 px-2 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white rounded-lg text-[11px] font-bold transition-all border border-white/5"><PauseCircle className="w-3 h-3" /></button>
+                                                            </>
                                                         )}
-                                                        <div className="w-full bg-slate-700/50 rounded-full h-2.5 overflow-hidden border border-white/5"><div className={`h-2.5 rounded-full transition-all duration-500 ${percent >= 100 ? 'bg-emerald-500' : 'bg-pink-500'}`} style={{ width: `${percent}%` }}></div></div>
+                                                        {item.status !== 'WATCHING' && (item.watchedSeasons || 0) < (item.totalSeasons || 0) && (
+                                                            <button onClick={() => handleStartWatchingSeries(item)} className="w-full py-1.5 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white rounded-lg text-[11px] font-bold transition-all border border-emerald-500/20 flex items-center justify-center gap-1">
+                                                                <PlayCircle className="w-3 h-3" /> {hasStartedCurrentSeason ? 'Retomar' : 'Começar a Ver'}
+                                                            </button>
+                                                        )}
                                                     </div>
-                                                    <div className="flex items-center justify-between pt-2">
-                                                        <div className={`px-2 py-1 rounded text-xs font-bold border ${item.status === 'COMPLETED' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : item.status === 'WATCHING' ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-slate-700/50 text-slate-400 border-slate-600'}`}>{getStatusLabel(item.status)}</div>
-                                                        {remaining > 0 ? <div className="text-xs text-pink-300 font-bold">{remaining} {remaining === 1 ? 'restante' : 'restantes'}</div> : <div className="text-xs text-emerald-400 font-bold">Completa</div>}
-                                                    </div>
-                                                    {isAdmin && (
-                                                        <div className="grid grid-cols-1 gap-2 mt-2">
-                                                            {item.status === 'WATCHING' && (
-                                                                <>
-                                                                    <button onClick={() => incrementProgress(item)} className="w-full py-2 bg-pink-600/20 hover:bg-pink-600 text-pink-400 hover:text-white rounded-lg text-xs font-bold transition-all border border-pink-500/30 flex items-center justify-center gap-2"><PlayCircle className="w-4 h-4" /> Próximo Episódio</button>
-                                                                    <button onClick={() => updateStatus(item.id, 'PENDING')} className="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-lg text-xs font-bold transition-all border border-white/5 flex items-center justify-center gap-2"><PauseCircle className="w-4 h-4" /> Pausar (A Ver)</button>
-                                                                </>
-                                                            )}
-                                                            {item.status !== 'WATCHING' && (item.watchedSeasons || 0) < (item.totalSeasons || 0) && (
-                                                                <button onClick={() => handleStartWatchingSeries(item)} className="w-full py-2 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white rounded-lg text-xs font-bold transition-all border border-emerald-500/30 flex items-center justify-center gap-2">
-                                                                    <PlayCircle className="w-4 h-4" /> {hasStartedCurrentSeason ? 'Retomar Série' : 'Começar a Ver'}
-                                                                </button>
-                                                            )}
-                                                        </div>
-                                                    )}
-                                                </div>
+                                                )}
                                             </PosterCard>
                                         );
                                     })}
@@ -701,23 +698,20 @@ export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = ({ 
                                                     {groupedCompletedMovies.groups[year].map(item => {
                                                         const isSyncing = syncingId === item.id;
                                                         return (
-                                                            <PosterCard key={item.id} item={item}>
-                                                                <div className="flex justify-between items-start"><div className="p-2.5 bg-pink-500/20 rounded-full text-pink-400 mb-4 w-fit"><Film className="w-5 h-5" /></div>
-                                                                    <div className="flex gap-1 bg-black/30 backdrop-blur-sm rounded-lg p-1">
-                                                                        <button onClick={() => setSelectedDetailItem(item)} className="btn-icon btn-icon-info"><Info className="w-3.5 h-3.5" /></button>
-                                                                        {isAdmin && (
-                                                                            <>
-                                                                                <button onClick={() => handleIndividualSync(item.id)} disabled={isSyncing} className={`btn-icon btn-icon-sync ${isSyncing ? 'animate-pulse' : ''}`} title="Sincronizar Dados"><RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} /></button>
-                                                                                <button onClick={() => startEdit(item)} className="btn-icon btn-icon-edit"><Pencil className="w-3.5 h-3.5" /></button>
-                                                                                <button onClick={() => removeItem(item.id)} className="btn-icon btn-icon-delete"><Trash2 className="w-3.5 h-3.5" /></button>
-                                                                            </>
-                                                                        )}
-                                                                    </div>
-                                                                </div>
-                                                                <h3 className="text-lg font-bold text-white mb-2 line-clamp-2">{item.title}</h3>
-                                                                <div className="mt-auto pt-4 border-t border-white/10 flex flex-col gap-2">
-                                                                    <div className="flex items-center gap-2 text-xs text-slate-400"><Calendar className="w-3.5 h-3.5" />{formatDate(item.releaseDate)}</div>
-                                                                    <div className="px-2 py-1 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 w-fit">Visto</div>
+                                                            <PosterCard key={item.id} item={item}
+                                                                actions={<>
+                                                                    <button onClick={() => setSelectedDetailItem(item)} className="btn-icon btn-icon-info"><Info className="w-3.5 h-3.5" /></button>
+                                                                    {isAdmin && <>
+                                                                        <button onClick={() => handleIndividualSync(item.id)} disabled={isSyncing} className={`btn-icon btn-icon-sync ${isSyncing ? 'animate-pulse' : ''}`}><RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} /></button>
+                                                                        <button onClick={() => startEdit(item)} className="btn-icon btn-icon-edit"><Pencil className="w-3.5 h-3.5" /></button>
+                                                                        <button onClick={() => removeItem(item.id)} className="btn-icon btn-icon-delete"><Trash2 className="w-3.5 h-3.5" /></button>
+                                                                    </>}
+                                                                </>}
+                                                            >
+                                                                <h3 className="text-lg font-bold text-white line-clamp-2 leading-snug">{item.title}</h3>
+                                                                <div className="flex items-center justify-between">
+                                                                    <span className="text-xs text-slate-400 flex items-center gap-1.5"><Calendar className="w-3 h-3" />{formatDate(item.releaseDate)}</span>
+                                                                    <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Visto</span>
                                                                 </div>
                                                             </PosterCard>
                                                         );
@@ -732,25 +726,22 @@ export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = ({ 
                                             {getPaginatedData(filteredMovies).map(item => {
                                                 const isSyncing = syncingId === item.id;
                                                 return (
-                                                    <PosterCard key={item.id} item={item}>
-                                                        <div className="flex justify-between items-start"><div className="p-2.5 bg-pink-500/20 rounded-full text-pink-400 mb-4 w-fit"><Film className="w-5 h-5" /></div>
-                                                            <div className="flex gap-1 bg-black/30 backdrop-blur-sm rounded-lg p-1">
-                                                                <button onClick={() => setSelectedDetailItem(item)} className="btn-icon btn-icon-info"><Info className="w-3.5 h-3.5" /></button>
-                                                                {isAdmin && (
-                                                                    <>
-                                                                        <button onClick={() => handleIndividualSync(item.id)} disabled={isSyncing} className={`btn-icon btn-icon-sync ${isSyncing ? 'animate-pulse' : ''}`} title="Sincronizar Dados"><RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} /></button>
-                                                                        <button onClick={() => startEdit(item)} className="btn-icon btn-icon-edit"><Pencil className="w-3.5 h-3.5" /></button>
-                                                                        <button onClick={() => removeItem(item.id)} className="btn-icon btn-icon-delete"><Trash2 className="w-3.5 h-3.5" /></button>
-                                                                    </>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                        <h3 className="text-lg font-bold text-white mb-2 line-clamp-2">{item.title}</h3>
-                                                        <div className="mt-auto pt-4 border-t border-white/10 flex flex-col gap-2">
-                                                            <div className="flex items-center gap-2 text-xs text-slate-400"><Calendar className="w-3.5 h-3.5" />{formatDate(item.releaseDate)}</div>
-                                                            <div className="flex justify-between items-center">
-                                                                <div className={`px-2 py-1 rounded text-[10px] font-bold border ${item.status === 'COMPLETED' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-slate-700/50 text-slate-400 border-slate-600'}`}>{getStatusLabel(item.status)}</div>
-                                                                {item.status === 'PENDING' && isAdmin && <button onClick={() => updateStatus(item.id, 'COMPLETED')} className="text-[10px] flex items-center gap-1 text-slate-400 hover:text-emerald-400 font-bold"><Check className="w-3 h-3" /> Visto</button>}
+                                                    <PosterCard key={item.id} item={item}
+                                                        actions={<>
+                                                            <button onClick={() => setSelectedDetailItem(item)} className="btn-icon btn-icon-info"><Info className="w-3.5 h-3.5" /></button>
+                                                            {isAdmin && <>
+                                                                <button onClick={() => handleIndividualSync(item.id)} disabled={isSyncing} className={`btn-icon btn-icon-sync ${isSyncing ? 'animate-pulse' : ''}`}><RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} /></button>
+                                                                <button onClick={() => startEdit(item)} className="btn-icon btn-icon-edit"><Pencil className="w-3.5 h-3.5" /></button>
+                                                                <button onClick={() => removeItem(item.id)} className="btn-icon btn-icon-delete"><Trash2 className="w-3.5 h-3.5" /></button>
+                                                            </>}
+                                                        </>}
+                                                    >
+                                                        <h3 className="text-lg font-bold text-white line-clamp-2 leading-snug">{item.title}</h3>
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="text-xs text-slate-400 flex items-center gap-1.5"><Calendar className="w-3 h-3" />{formatDate(item.releaseDate)}</span>
+                                                            <div className="flex items-center gap-2">
+                                                                {item.status === 'PENDING' && isAdmin && <button onClick={() => updateStatus(item.id, 'COMPLETED')} className="text-[10px] flex items-center gap-1 text-slate-400 hover:text-emerald-400 font-bold transition-colors"><Check className="w-3 h-3" /> Visto</button>}
+                                                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${item.status === 'COMPLETED' ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' : 'text-slate-400 bg-white/5 border-white/10'}`}>{getStatusLabel(item.status)}</span>
                                                             </div>
                                                         </div>
                                                     </PosterCard>
@@ -781,27 +772,27 @@ export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = ({ 
                                         const percent = total ? (watched / total) * 100 : 0;
                                         const isSyncing = syncingId === item.id;
                                         return (
-                                            <PosterCard key={item.id} item={item} overlayColor="from-slate-900 via-yellow-900/10">
-                                                <div className="flex justify-between items-start mb-4">
-                                                    <div className="flex items-start gap-3"><div className="mt-1 p-2 bg-yellow-500/20 rounded-lg text-yellow-400"><Zap className="w-4 h-4" /></div><h3 className="text-xl font-bold text-white line-clamp-1">{item.title}</h3></div>
-                                                    <div className="flex gap-1 shrink-0 bg-black/30 backdrop-blur-sm rounded-lg p-1">
-                                                        <button onClick={() => setSelectedDetailItem(item)} className="btn-icon btn-icon-info" title="Detalhes"><Info className="w-3.5 h-3.5" /></button>
-                                                        {isAdmin && (
-                                                            <>
-                                                                <button onClick={() => handleIndividualSync(item.id)} disabled={isSyncing} className={`btn-icon btn-icon-sync ${isSyncing ? 'animate-pulse' : ''}`} title="Sincronizar Dados"><RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} /></button>
-                                                                <button onClick={() => startEdit(item)} className="btn-icon btn-icon-edit"><Pencil className="w-3.5 h-3.5" /></button>
-                                                                <button onClick={() => removeItem(item.id)} className="btn-icon btn-icon-delete"><Trash2 className="w-3.5 h-3.5" /></button>
-                                                            </>
-                                                        )}
+                                            <PosterCard key={item.id} item={item} overlayColor="from-slate-900 via-yellow-900/10"
+                                                actions={<>
+                                                    <button onClick={() => setSelectedDetailItem(item)} className="btn-icon btn-icon-info"><Info className="w-3.5 h-3.5" /></button>
+                                                    {isAdmin && <>
+                                                        <button onClick={() => handleIndividualSync(item.id)} disabled={isSyncing} className={`btn-icon btn-icon-sync ${isSyncing ? 'animate-pulse' : ''}`}><RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} /></button>
+                                                        <button onClick={() => startEdit(item)} className="btn-icon btn-icon-edit"><Pencil className="w-3.5 h-3.5" /></button>
+                                                        <button onClick={() => removeItem(item.id)} className="btn-icon btn-icon-delete"><Trash2 className="w-3.5 h-3.5" /></button>
+                                                    </>}
+                                                </>}
+                                            >
+                                                <h3 className="text-lg font-bold text-white line-clamp-2 leading-snug">{item.title}</h3>
+                                                <div>
+                                                    <div className="flex justify-between text-xs text-slate-400 mb-1.5">
+                                                        <span>{watched} / {total} episódios</span>
+                                                        <span className={percent >= 100 ? 'text-emerald-400' : 'text-yellow-400'}>{Math.round(percent)}%</span>
                                                     </div>
+                                                    <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden"><div className={`h-1.5 rounded-full transition-all duration-500 ${percent >= 100 ? 'bg-emerald-500' : 'bg-yellow-500'}`} style={{ width: `${Math.max(percent, 2)}%` }} /></div>
                                                 </div>
-                                                <div className="space-y-4">
-                                                    <div className="flex justify-between text-sm text-slate-300 font-medium"><span>Progresso</span><span className="text-white font-bold">{watched} / {total} EPS</span></div>
-                                                    <div className="w-full bg-slate-700/50 rounded-full h-2.5 overflow-hidden border border-white/5"><div className={`h-2.5 rounded-full transition-all duration-500 ${percent >= 100 ? 'bg-emerald-500' : 'bg-yellow-500'}`} style={{ width: `${percent}%` }}></div></div>
-                                                    <div className="flex items-center justify-between">
-                                                        <div className={`px-2 py-1 rounded text-xs font-bold border ${item.status === 'COMPLETED' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : item.status === 'WATCHING' ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' : 'bg-slate-700/50 text-slate-400 border-slate-600'}`}>{getStatusLabel(item.status)}</div>
-                                                        {isAdmin && item.status === 'WATCHING' && <button onClick={() => incrementProgress(item)} className="flex items-center gap-1 text-[10px] text-yellow-400 font-bold hover:text-white px-2 py-1 bg-yellow-500/10 rounded border border-yellow-500/20"><PlayCircle className="w-3 h-3" />+1 Ep</button>}
-                                                    </div>
+                                                <div className="flex items-center justify-between">
+                                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${item.status === 'COMPLETED' ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' : item.status === 'WATCHING' ? 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20' : 'text-slate-400 bg-white/5 border-white/10'}`}>{getStatusLabel(item.status)}</span>
+                                                    {isAdmin && item.status === 'WATCHING' && <button onClick={() => incrementProgress(item)} className="flex items-center gap-1 text-[10px] text-yellow-400 font-bold hover:text-white px-2 py-1 bg-yellow-500/10 rounded border border-yellow-500/20 transition-colors"><PlayCircle className="w-3 h-3" />+1 Ep</button>}
                                                 </div>
                                             </PosterCard>
                                         );
