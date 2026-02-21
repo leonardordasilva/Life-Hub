@@ -103,25 +103,25 @@ export const FinanceDashboard: React.FC<FinanceDashboardProps> = ({ role }) => {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex flex-wrap gap-2 mb-8 border-b border-white/10 pb-1">
+        <div className="flex flex-wrap gap-1.5 mb-8 bg-slate-800/60 p-1.5 rounded-2xl border border-white/5 backdrop-blur-sm w-fit">
           {isAdmin && (
               <>
                 <button
                     onClick={() => setActiveTab('categories')}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-t-lg transition-colors font-medium border-b-2 ${
+                    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all duration-200 font-medium text-sm ${
                     activeTab === 'categories' 
-                        ? 'border-emerald-500 text-emerald-400 bg-white/5' 
-                        : 'border-transparent text-slate-400 hover:text-white hover:bg-white/5'
+                        ? 'bg-amber-500/20 text-amber-300 shadow-lg shadow-amber-900/10 border border-amber-500/30' 
+                        : 'text-slate-400 hover:text-white hover:bg-white/5 border border-transparent'
                     }`}
                 >
-                    <Tag className="w-4 h-4" /> Itens (Categorias)
+                    <Tag className="w-4 h-4" /> Itens
                 </button>
                 <button
                     onClick={() => setActiveTab('transactions')}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-t-lg transition-colors font-medium border-b-2 ${
+                    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all duration-200 font-medium text-sm ${
                     activeTab === 'transactions' 
-                        ? 'border-emerald-500 text-emerald-400 bg-white/5' 
-                        : 'border-transparent text-slate-400 hover:text-white hover:bg-white/5'
+                        ? 'bg-amber-500/20 text-amber-300 shadow-lg shadow-amber-900/10 border border-amber-500/30' 
+                        : 'text-slate-400 hover:text-white hover:bg-white/5 border border-transparent'
                     }`}
                 >
                     <LayoutDashboard className="w-4 h-4" /> Lançamentos
@@ -131,10 +131,10 @@ export const FinanceDashboard: React.FC<FinanceDashboardProps> = ({ role }) => {
           
           <button
             onClick={() => setActiveTab('report')}
-            className={`flex items-center gap-2 px-6 py-3 rounded-t-lg transition-colors font-medium border-b-2 ${
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all duration-200 font-medium text-sm ${
               activeTab === 'report' 
-                ? 'border-emerald-500 text-emerald-400 bg-white/5' 
-                : 'border-transparent text-slate-400 hover:text-white hover:bg-white/5'
+                ? 'bg-amber-500/20 text-amber-300 shadow-lg shadow-amber-900/10 border border-amber-500/30' 
+                : 'text-slate-400 hover:text-white hover:bg-white/5 border border-transparent'
             }`}
           >
             <FileText className="w-4 h-4" /> Relatório Anual
