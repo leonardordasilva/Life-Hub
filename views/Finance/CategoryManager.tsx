@@ -54,29 +54,29 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ categories, on
           {editingId ? <Pencil className="w-4 h-4 text-indigo-400" /> : <Tag className="w-4 h-4" />}
           {editingId ? 'Editar Categoria' : 'Nova Categoria'}
         </h3>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm text-slate-400 mb-1">Nome do Item</label>
+            <label className="block text-xs font-semibold text-amber-400/80 uppercase tracking-wider mb-2">Nome do Item</label>
             <input
               type="text"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               disabled={submitting}
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500 disabled:opacity-50"
+              className="w-full bg-slate-900/80 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-amber-500/60 focus:ring-2 focus:ring-amber-500/20 disabled:opacity-50 transition-all duration-200 backdrop-blur-sm hover:border-white/20"
               placeholder="Ex: Aluguel, Salário, Dividendos..."
             />
           </div>
           <div>
-            <label className="block text-sm text-slate-400 mb-1">Tipo</label>
+            <label className="block text-xs font-semibold text-amber-400/80 uppercase tracking-wider mb-2">Tipo</label>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 disabled={submitting}
                 onClick={() => setNewType('INCOME')}
-                className={`py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 ${
+                className={`py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 disabled:opacity-50 ${
                   newType === 'INCOME' 
-                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50' 
-                    : 'bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700'
+                    ? 'bg-emerald-500/20 text-emerald-400 border-2 border-emerald-500/50 shadow-lg shadow-emerald-900/20' 
+                    : 'bg-slate-900/80 text-slate-400 border border-white/10 hover:border-white/20 hover:text-slate-300'
                 }`}
               >
                 Receita
@@ -85,10 +85,10 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ categories, on
                 type="button"
                 disabled={submitting}
                 onClick={() => setNewType('EXPENSE')}
-                className={`py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 ${
+                className={`py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 disabled:opacity-50 ${
                   newType === 'EXPENSE' 
-                    ? 'bg-rose-500/20 text-rose-400 border border-rose-500/50' 
-                    : 'bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700'
+                    ? 'bg-rose-500/20 text-rose-400 border-2 border-rose-500/50 shadow-lg shadow-rose-900/20' 
+                    : 'bg-slate-900/80 text-slate-400 border border-white/10 hover:border-white/20 hover:text-slate-300'
                 }`}
               >
                 Despesa
