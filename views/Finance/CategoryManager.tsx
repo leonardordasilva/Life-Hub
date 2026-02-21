@@ -100,10 +100,10 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ categories, on
             <button
               type="submit"
               disabled={submitting}
-              className={`btn btn-md flex-1 ${editingId ? 'btn-amber' : 'btn-success'}`}
+              className={`btn btn-md flex-1 ${editingId ? 'btn-amber' : newType === 'INCOME' ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/30' : 'bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-900/30'}`}
             >
               {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : (editingId ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />)}
-              {submitting ? 'Salvando...' : (editingId ? 'Salvar Alteração' : 'Adicionar Item')}
+              {submitting ? 'Salvando...' : (editingId ? 'Salvar Alteração' : newType === 'INCOME' ? 'Adicionar Receita' : 'Adicionar Despesa')}
             </button>
 
             {editingId && (
