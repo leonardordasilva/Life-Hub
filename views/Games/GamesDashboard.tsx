@@ -68,7 +68,7 @@ interface GamesDashboardProps {
 }
 
 export const GamesDashboard: React.FC<GamesDashboardProps> = ({ role }) => {
-    const { games, loading, addGame, editGame, syncGame, removeGame, updateGameStatus } = useGames();
+    const { games, loading, addGame, editGame, syncGame, syncAllGames, removeGame, updateGameStatus } = useGames();
     const { showToast } = useToast();
     const isAdmin = role === 'ADMIN';
 
@@ -79,6 +79,9 @@ export const GamesDashboard: React.FC<GamesDashboardProps> = ({ role }) => {
     const [submitting, setSubmitting] = useState(false);
     const [selectedDetailItem, setSelectedDetailItem] = useState<EntertainmentItem | null>(null);
     const [syncingId, setSyncingId] = useState<string | null>(null);
+
+    // Sync All State
+    const [syncAllState, setSyncAllState] = useState<{ isOpen: boolean; stage: 'PROGRESS' | 'DONE'; progress: number; total: number; currentTitle: string }>({ isOpen: false, stage: 'PROGRESS', progress: 0, total: 0, currentTitle: '' });
 
     // Multi-select State
     const [candidates, setCandidates] = useState<RawgResult[]>([]);
@@ -254,10 +257,27 @@ export const GamesDashboard: React.FC<GamesDashboardProps> = ({ role }) => {
                     <div className="bg-slate-800/50 border border-white/5 rounded-xl p-4 flex items-center gap-3"><div className="p-2 bg-violet-500/20 rounded-lg text-violet-400"><Trophy className="w-5 h-5" /></div><div><p className="text-xs text-slate-400 uppercase">Zerados</p><p className="text-xl font-bold">{stats.completed}</p></div></div>
                 </div>
 
-                <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-                    {[{ id: 'ALL', label: 'Todos' }, { id: 'BACKLOG', label: 'Backlog' }, { id: 'PLAYING', label: 'Jogando' }, { id: 'COMPLETED', label: 'Zerados' }, { id: 'CASUAL', label: 'Casual' }].map(f => (
-                        <button key={f.id} onClick={() => setFilter(f.id as any)} className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${filter === f.id ? 'bg-violet-600 text-white shadow-lg shadow-violet-900/20' : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700'}`}>{f.label}</button>
-                    ))}
+                <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+                    <div className="flex gap-2 overflow-x-auto pb-2">
+                        {[{ id: 'ALL', label: 'Todos' }, { id: 'BACKLOG', label: 'Backlog' }, { id: 'PLAYING', label: 'Jogando' }, { id: 'COMPLETED', label: 'Zerados' }, { id: 'CASUAL', label: 'Casual' }].map(f => (
+                            <button key={f.id} onClick={() => setFilter(f.id as any)} className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${filter === f.id ? 'bg-violet-600 text-white shadow-lg shadow-violet-900/20' : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700'}`}>{f.label}</button>
+                        ))}
+                    </div>
+                    {isAdmin && games.length > 0 && (
+                        <button
+                            onClick={async () => {
+                                setSyncAllState({ isOpen: true, stage: 'PROGRESS', progress: 0, total: games.length, currentTitle: 'Iniciando...' });
+                                await syncAllGames((curr, total, title) => {
+                                    setSyncAllState(prev => ({ ...prev, progress: curr, total, currentTitle: title }));
+                                });
+                                setSyncAllState(prev => ({ ...prev, stage: 'DONE' }));
+                            }}
+                            disabled={syncAllState.isOpen}
+                            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-600/20 to-purple-600/20 hover:from-violet-600 hover:to-purple-600 text-violet-400 hover:text-white rounded-xl text-xs font-bold transition-all duration-300 border border-violet-500/30 hover:border-violet-400 hover:shadow-lg hover:shadow-violet-900/30"
+                        >
+                            <RefreshCw className="w-3.5 h-3.5" /> Sincronizar Tudo
+                        </button>
+                    )}
                 </div>
 
                 {loading ? (
@@ -374,6 +394,31 @@ export const GamesDashboard: React.FC<GamesDashboardProps> = ({ role }) => {
                                 <div><label className="label-std">Status</label><select className="input-std" value={status} onChange={e => setStatus(e.target.value as MediaStatus)}><option value="PENDING">Backlog</option><option value="WATCHING">Jogando</option><option value="COMPLETED">Zerado</option><option value="CASUAL">Casual</option></select></div>
                                 <div className="flex gap-3 mt-6"><button type="button" onClick={() => setShowModal(false)} className="btn btn-md btn-ghost flex-1">Cancelar</button><button type="submit" disabled={submitting} className="btn btn-md btn-violet flex-1">{submitting && <Loader2 className="w-4 h-4 animate-spin" />} Salvar</button></div>
                             </form>
+                        </div>
+                    </div>
+                )}
+
+                {/* SYNC ALL MODAL */}
+                {syncAllState.isOpen && (
+                    <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 z-[100] animate-in zoom-in duration-200">
+                        <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-xl p-8 shadow-2xl overflow-hidden relative">
+                            {syncAllState.stage === 'PROGRESS' && (
+                                <div className="text-center py-12">
+                                    <RefreshCw className="w-16 h-16 text-violet-500 animate-spin mx-auto mb-6" />
+                                    <h3 className="text-2xl font-bold text-white mb-2">Sincronizando Jogos...</h3>
+                                    <p className="text-slate-400 mb-8">Consultando API RAWG ({syncAllState.progress}/{syncAllState.total})</p>
+                                    <div className="w-full bg-slate-800 rounded-full h-2 mb-4"><div className="bg-violet-500 h-2 rounded-full transition-all" style={{ width: `${syncAllState.total ? (syncAllState.progress / syncAllState.total) * 100 : 0}%` }} /></div>
+                                    <p className="text-xs text-violet-400 font-mono italic">Atual: {syncAllState.currentTitle}</p>
+                                </div>
+                            )}
+                            {syncAllState.stage === 'DONE' && (
+                                <div className="text-center py-12">
+                                    <div className="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-6"><Check className="w-8 h-8" /></div>
+                                    <h3 className="text-2xl font-bold text-white mb-2">Sincronização Concluída!</h3>
+                                    <p className="text-slate-400 mb-8">{syncAllState.total} jogos sincronizados com sucesso.</p>
+                                    <button onClick={() => setSyncAllState(prev => ({ ...prev, isOpen: false }))} className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-colors">Fechar</button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
