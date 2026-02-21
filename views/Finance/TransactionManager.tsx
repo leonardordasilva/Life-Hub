@@ -157,15 +157,11 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
               />
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-2 mt-4">
               <button
                 type="submit"
                 disabled={!selectedCatId || !amount || submitting}
-                className={`flex-1 flex justify-center items-center gap-2 px-4 py-2 rounded-lg transition-colors font-medium mt-4 ${
-                  editingId 
-                    ? 'bg-indigo-600 hover:bg-indigo-700 text-white' 
-                    : 'bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-50 disabled:cursor-not-allowed'
-                } ${submitting ? 'cursor-wait opacity-70' : ''}`}
+                className={`btn btn-md flex-1 ${editingId ? 'btn-amber' : 'btn-success'}`}
               >
                 {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : (editingId ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />)}
                 {submitting ? 'Salvando...' : (editingId ? 'Salvar' : 'Lançar')}
@@ -176,7 +172,7 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
                   type="button"
                   onClick={cancelEdit}
                   disabled={submitting}
-                  className="mt-4 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-white disabled:opacity-50"
+                  className="btn btn-md btn-ghost"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -228,22 +224,22 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
                                   + {formatCurrency(t.amount)}
                                 </td>
                                 <td className="py-2 text-center">
-                                  <div className="flex justify-center gap-2">
+                                  <div className="flex justify-center gap-1">
                                     <button
                                       onClick={() => startEdit(t)}
                                       disabled={submitting}
-                                      className="text-slate-500 hover:text-indigo-400 transition-colors p-1 disabled:opacity-50"
+                                      className="btn-icon btn-icon-edit"
                                       title="Editar"
                                     >
-                                      <Pencil className="w-3 h-3" />
+                                      <Pencil className="w-3.5 h-3.5" />
                                     </button>
                                     <button 
                                       onClick={() => onRemove(t.id)}
                                       disabled={submitting}
-                                      className="text-slate-500 hover:text-rose-400 transition-colors p-1 disabled:opacity-50"
+                                      className="btn-icon btn-icon-delete"
                                       title="Remover"
                                     >
-                                      <Trash2 className="w-3 h-3" />
+                                      <Trash2 className="w-3.5 h-3.5" />
                                     </button>
                                   </div>
                                 </td>
@@ -286,22 +282,22 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
                                   - {formatCurrency(t.amount)}
                                 </td>
                                 <td className="py-2 text-center">
-                                  <div className="flex justify-center gap-2">
+                                  <div className="flex justify-center gap-1">
                                     <button
                                       onClick={() => startEdit(t)}
                                       disabled={submitting}
-                                      className="text-slate-500 hover:text-indigo-400 transition-colors p-1 disabled:opacity-50"
+                                      className="btn-icon btn-icon-edit"
                                       title="Editar"
                                     >
-                                      <Pencil className="w-3 h-3" />
+                                      <Pencil className="w-3.5 h-3.5" />
                                     </button>
                                     <button 
                                       onClick={() => onRemove(t.id)}
                                       disabled={submitting}
-                                      className="text-slate-500 hover:text-rose-400 transition-colors p-1 disabled:opacity-50"
+                                      className="btn-icon btn-icon-delete"
                                       title="Remover"
                                     >
-                                      <Trash2 className="w-3 h-3" />
+                                      <Trash2 className="w-3.5 h-3.5" />
                                     </button>
                                   </div>
                                 </td>

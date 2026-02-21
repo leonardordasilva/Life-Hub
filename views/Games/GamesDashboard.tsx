@@ -231,7 +231,7 @@ export const GamesDashboard: React.FC<GamesDashboardProps> = ({ role }) => {
                             <input type="text" placeholder="Buscar jogo..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-10 pr-10 py-2.5 bg-slate-800/80 border border-slate-700 rounded-lg text-sm text-white focus:ring-2 focus:ring-violet-500/50 outline-none transition-all" />
                             {searchQuery && <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"><X className="w-4 h-4" /></button>}
                         </div>
-                        {isAdmin && <button onClick={openModal} className="flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-lg font-medium transition-colors shadow-lg shadow-violet-900/20 whitespace-nowrap"><Plus className="w-4 h-4" /> Adicionar</button>}
+                        {isAdmin && <button onClick={openModal} className="btn btn-md btn-violet whitespace-nowrap"><Plus className="w-4 h-4" /> Adicionar</button>}
                     </div>
                 </header>
 
@@ -259,12 +259,12 @@ export const GamesDashboard: React.FC<GamesDashboardProps> = ({ role }) => {
                                     <div className="flex justify-between items-start mb-4">
                                         <div className="flex flex-col"><h3 className="text-lg font-bold text-white line-clamp-1">{game.title}</h3><span className="text-xs text-slate-300 font-medium bg-black/40 px-2 py-0.5 rounded w-fit mt-1 backdrop-blur-sm">{game.platform || 'Multi'}</span></div>
                                         <div className="flex gap-1 shrink-0 bg-black/40 backdrop-blur-sm rounded-lg p-1">
-                                            <button onClick={() => setSelectedDetailItem(game)} className="p-1.5 text-slate-300 hover:text-violet-400 transition-colors"><Info className="w-3.5 h-3.5" /></button>
+                                            <button onClick={() => setSelectedDetailItem(game)} className="btn-icon btn-icon-info"><Info className="w-3.5 h-3.5" /></button>
                                             {isAdmin && (
                                                 <>
-                                                    <button onClick={() => handleIndividualSync(game.id)} disabled={isSyncing} className={`p-1.5 text-slate-300 hover:text-emerald-400 transition-colors ${isSyncing ? 'animate-pulse' : ''}`} title="Sincronizar Dados"><RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} /></button>
-                                                    <button onClick={() => startEdit(game)} className="p-1.5 text-slate-300 hover:text-cyan-400 transition-colors"><Pencil className="w-3.5 h-3.5" /></button>
-                                                    <button onClick={() => removeGame(game.id)} className="p-1.5 text-slate-300 hover:text-red-400 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
+                                                    <button onClick={() => handleIndividualSync(game.id)} disabled={isSyncing} className={`btn-icon btn-icon-sync ${isSyncing ? 'animate-pulse' : ''}`} title="Sincronizar Dados"><RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} /></button>
+                                                    <button onClick={() => startEdit(game)} className="btn-icon btn-icon-edit"><Pencil className="w-3.5 h-3.5" /></button>
+                                                    <button onClick={() => removeGame(game.id)} className="btn-icon btn-icon-delete"><Trash2 className="w-3.5 h-3.5" /></button>
                                                 </>
                                             )}
                                         </div>
@@ -360,7 +360,7 @@ export const GamesDashboard: React.FC<GamesDashboardProps> = ({ role }) => {
 
                                 <div><label className="label-std">Plataforma</label><input className="input-std" value={platform} onChange={e => setPlatform(e.target.value)} /></div>
                                 <div><label className="label-std">Status</label><select className="input-std" value={status} onChange={e => setStatus(e.target.value as MediaStatus)}><option value="PENDING">Backlog</option><option value="WATCHING">Jogando</option><option value="COMPLETED">Zerado</option><option value="CASUAL">Casual</option></select></div>
-                                <div className="flex gap-3 mt-6"><button type="button" onClick={() => setShowModal(false)} className="flex-1 py-2.5 bg-slate-800 rounded-lg text-white">Cancelar</button><button type="submit" disabled={submitting} className="flex-1 py-2.5 bg-violet-600 hover:bg-violet-700 rounded-lg text-white font-bold flex items-center justify-center gap-2">{submitting && <Loader2 className="w-4 h-4 animate-spin" />} Salvar</button></div>
+                                <div className="flex gap-3 mt-6"><button type="button" onClick={() => setShowModal(false)} className="btn btn-md btn-ghost flex-1">Cancelar</button><button type="submit" disabled={submitting} className="btn btn-md btn-violet flex-1">{submitting && <Loader2 className="w-4 h-4 animate-spin" />} Salvar</button></div>
                             </form>
                         </div>
                     </div>

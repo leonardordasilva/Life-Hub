@@ -93,16 +93,15 @@ export const ReserveManager: React.FC<ReserveManagerProps> = ({ year, initialAmo
                     <button
                         onClick={handleSave}
                         disabled={submitting}
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="btn btn-sm btn-success"
                         title="Salvar"
                     >
                         {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                     </button>
-                    {/* Botão Cancelar útil se o usuário clicou no lápis manualmente */}
                     <button
                         onClick={handleCancel}
                         disabled={submitting}
-                        className="bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                        className="btn btn-sm btn-ghost"
                         title="Cancelar"
                     >
                         <X className="w-4 h-4" />

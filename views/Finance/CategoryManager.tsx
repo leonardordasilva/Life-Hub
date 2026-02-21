@@ -96,15 +96,11 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ categories, on
             </div>
           </div>
           
-          <div className="flex gap-2">
+          <div className="flex gap-2 mt-4">
             <button
               type="submit"
               disabled={submitting}
-              className={`flex-1 flex justify-center items-center gap-2 px-4 py-2 rounded-lg transition-colors font-medium mt-4 ${
-                editingId 
-                  ? 'bg-indigo-600 hover:bg-indigo-700 text-white' 
-                  : 'bg-blue-600 hover:bg-blue-700 text-white'
-              } ${submitting ? 'opacity-70 cursor-wait' : ''}`}
+              className={`btn btn-md flex-1 ${editingId ? 'btn-amber' : 'btn-success'}`}
             >
               {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : (editingId ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />)}
               {submitting ? 'Salvando...' : (editingId ? 'Salvar Alteração' : 'Adicionar Item')}
@@ -115,7 +111,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ categories, on
                   type="button"
                   onClick={cancelEdit}
                   disabled={submitting}
-                  className="mt-4 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-white disabled:opacity-50"
+                  className="btn btn-md btn-ghost"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -146,7 +142,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ categories, on
                      <button
                         onClick={() => startEdit(cat)}
                         disabled={submitting}
-                        className="text-slate-500 hover:text-indigo-400 transition-colors p-1 disabled:opacity-50"
+                        className="btn-icon btn-icon-edit"
                         title="Editar"
                      >
                         <Pencil className="w-4 h-4" />
@@ -154,7 +150,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ categories, on
                      <button
                         onClick={() => onRemove(cat.id)}
                         disabled={submitting}
-                        className="text-slate-500 hover:text-rose-400 transition-colors p-1 disabled:opacity-50"
+                        className="btn-icon btn-icon-delete"
                         title="Remover"
                      >
                         <Trash2 className="w-4 h-4" />
@@ -182,7 +178,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ categories, on
                      <button
                         onClick={() => startEdit(cat)}
                         disabled={submitting}
-                        className="text-slate-500 hover:text-indigo-400 transition-colors p-1 disabled:opacity-50"
+                        className="btn-icon btn-icon-edit"
                         title="Editar"
                      >
                         <Pencil className="w-4 h-4" />
@@ -190,7 +186,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ categories, on
                      <button
                         onClick={() => onRemove(cat.id)}
                         disabled={submitting}
-                        className="text-slate-500 hover:text-rose-400 transition-colors p-1 disabled:opacity-50"
+                        className="btn-icon btn-icon-delete"
                         title="Remover"
                      >
                         <Trash2 className="w-4 h-4" />
