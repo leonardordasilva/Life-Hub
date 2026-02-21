@@ -443,15 +443,17 @@ export const useEntertainment = () => {
                     if (type === 'SERIES' && result.totalSeasons && result.totalSeasons !== (item.totalSeasons || 0)) hasChanges = true;
                     if (type === 'ANIME' && result.totalEpisodes && result.totalEpisodes !== (item.totalEpisodes || 0)) hasChanges = true;
 
-                    if (!item.synopsis && result.synopsis) hasChanges = true;
-                    if (!item.posterUrl && result.posterUrl) hasChanges = true;
+                    // Check all metadata fields for divergence (not just missing)
+                    if (result.synopsis && result.synopsis !== item.synopsis) hasChanges = true;
+                    if (result.posterUrl && result.posterUrl !== item.posterUrl) hasChanges = true;
+                    if (result.genres && JSON.stringify(result.genres) !== JSON.stringify(item.genres)) hasChanges = true;
 
-                    // Check rating change (considering format)
                     const currentRating = formatRating(item.rating);
                     const newRating = formatRating(result.rating);
                     if (newRating !== currentRating) hasChanges = true;
 
-                    if (type === 'BOOK' && !item.author && result.author) hasChanges = true;
+                    if (type === 'BOOK' && result.author && result.author !== item.author) hasChanges = true;
+                    if ((type === 'BOOK' || type === 'MOVIE') && result.releaseDate && result.releaseDate !== item.releaseDate) hasChanges = true;
                     if (!item.externalId && (result.id || result.key)) hasChanges = true;
 
                     if (hasChanges) {
