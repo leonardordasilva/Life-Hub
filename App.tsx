@@ -34,8 +34,9 @@ const App: React.FC = () => {
   useEffect(() => {
     const checkDatabase = async () => {
       try {
-        const { error: configError } = await supabase.from('app_config').select('key').limit(1);
-        if (configError) throw configError;
+        // app_config is now locked down (service role only), so check other tables instead
+        const { error: catError } = await supabase.from('finance_categories').select('id').limit(1);
+        // If this fails, DB is not ready
 
         const { error: financeError } = await supabase.from('finance_categories').select('id').limit(1);
         if (financeError) throw financeError;

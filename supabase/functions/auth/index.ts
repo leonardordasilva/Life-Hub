@@ -33,7 +33,9 @@ serve(async (req) => {
         switch (action) {
             case "auth_verify": {
                 const { password } = payload;
-                if (!password) throw new Error("Password required");
+                if (!password || typeof password !== 'string' || password.length > 500) {
+                    return new Response(JSON.stringify({ success: false, resetRequired: false }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+                }
 
                 const inputHash = await hashPassword(password);
                 const { data: pwdData } = await supabase.from("app_config").select("value").eq("key", "admin_password_hash").single();
@@ -54,9 +56,18 @@ serve(async (req) => {
 
             case "auth_change_password": {
                 const { currentPassword, newPassword } = payload;
-                if (!newPassword || newPassword.length < 4) throw new Error("Invalid new password");
+                if (!newPassword || typeof newPassword !== 'string' || newPassword.length < 4 || newPassword.length > 500) {
+                    return new Response(JSON.stringify({ success: false, error: "Password must be 4-500 characters" }), {
+                        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" }
+                    });
+                }
 
                 if (currentPassword) {
+                    if (typeof currentPassword !== 'string' || currentPassword.length > 500) {
+                        return new Response(JSON.stringify({ success: false, error: "Invalid current password" }), {
+                            status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" }
+                        });
+                    }
                     const currentHash = await hashPassword(currentPassword);
                     const { data } = await supabase.from("app_config").select("value").eq("key", "admin_password_hash").single();
                     if (!data || data.value !== currentHash) {
@@ -81,8 +92,8 @@ serve(async (req) => {
                 });
         }
     } catch (err: any) {
-        console.error(err);
-        return new Response(JSON.stringify({ error: err.message || "Internal server error" }), {
+        console.error("auth error:", err);
+        return new Response(JSON.stringify({ error: "An error occurred processing your request" }), {
             status: 500,
             headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
