@@ -35,11 +35,15 @@ export const VacationDashboard: React.FC<VacationDashboardProps> = ({ role }) =>
   // Year Filter State (Global)
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
-  // Compute years that have trips
+  // Compute years that have any vacation data (trips, flights, hotels, tours)
   const yearsWithTrips = useMemo(() => {
-    const years = new Set(trips.map(t => t.year));
+    const years = new Set<number>();
+    trips.forEach(t => years.add(t.year));
+    flights.forEach(f => years.add(f.year));
+    hotels.forEach(h => years.add(h.year));
+    tours.forEach(t => years.add(t.year));
     return years;
-  }, [trips]);
+  }, [trips, flights, hotels, tours]);
 
   // Generate a range of years to show (centered on selectedYear, plus all years with data)
   const visibleYears = useMemo(() => {
@@ -294,22 +298,31 @@ export const VacationDashboard: React.FC<VacationDashboardProps> = ({ role }) =>
                     <ChevronLeft className="w-4 h-4" />
                 </button>
                 <div className="flex gap-1 overflow-x-auto custom-scrollbar px-1">
-                    {visibleYears.map(year => (
-                        <button
-                            key={year}
-                            onClick={() => { setSelectedYear(year); setSelectedTripId(null); }}
-                            className={`relative px-3 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-                                year === selectedYear
-                                    ? 'bg-cyan-600 text-white shadow-lg shadow-cyan-900/30'
-                                    : 'text-slate-400 hover:text-white hover:bg-white/10'
-                            }`}
-                        >
-                            {year}
-                            {yearsWithTrips.has(year) && year !== selectedYear && (
-                                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-cyan-400 rounded-full" />
-                            )}
-                        </button>
-                    ))}
+                    {visibleYears.map(year => {
+                        const hasData = yearsWithTrips.has(year);
+                        const isSelected = year === selectedYear;
+                        return (
+                            <button
+                                key={year}
+                                onClick={() => { setSelectedYear(year); setSelectedTripId(null); }}
+                                className={`relative px-3 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+                                    isSelected
+                                        ? 'bg-cyan-600 text-white shadow-lg shadow-cyan-900/30'
+                                        : hasData
+                                            ? 'text-cyan-300 hover:text-white hover:bg-white/10 bg-cyan-900/20 border border-cyan-700/30'
+                                            : 'text-slate-500 hover:text-white hover:bg-white/10'
+                                }`}
+                            >
+                                {year}
+                                {hasData && !isSelected && (
+                                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-cyan-400 rounded-full border-2 border-slate-900 animate-pulse" />
+                                )}
+                                {hasData && isSelected && (
+                                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-white rounded-full border-2 border-cyan-600" />
+                                )}
+                            </button>
+                        );
+                    })}
                 </div>
                 <button
                     onClick={() => { setSelectedYear(prev => prev + 1); setSelectedTripId(null); }}
