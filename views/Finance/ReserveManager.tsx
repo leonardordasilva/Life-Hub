@@ -98,14 +98,16 @@ export const ReserveManager: React.FC<ReserveManagerProps> = ({ year, initialAmo
                     >
                         {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                     </button>
-                    <button
-                        onClick={handleCancel}
-                        disabled={submitting}
-                        className="btn btn-sm btn-ghost"
-                        title="Cancelar"
-                    >
-                        <X className="w-4 h-4" />
-                    </button>
+                    {initialAmount !== 0 && (
+                        <button
+                            onClick={handleCancel}
+                            disabled={submitting}
+                            className="btn btn-sm btn-ghost"
+                            title="Cancelar"
+                        >
+                            <X className="w-4 h-4" />
+                        </button>
+                    )}
                 </div>
             </div>
           ) : (
