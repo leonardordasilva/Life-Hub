@@ -268,9 +268,9 @@ export const GamesDashboard: React.FC<GamesDashboardProps> = ({ role }) => {
                             return (
                                 <PosterCard key={game.id} item={game} onClick={() => setSelectedDetailItem(game)}
                                     actions={isAdmin ? <>
-                                        <button onClick={() => handleIndividualSync(game.id)} disabled={isSyncing} className={`btn-icon btn-icon-sync ${isSyncing ? 'animate-pulse' : ''}`} title="Sincronizar"><RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} /></button>
-                                        <button onClick={() => startEdit(game)} className="btn-icon btn-icon-edit" title="Editar"><Pencil className="w-3.5 h-3.5" /></button>
-                                        <button onClick={() => removeGame(game.id)} className="btn-icon btn-icon-delete" title="Excluir"><Trash2 className="w-3.5 h-3.5" /></button>
+                                        <button onClick={() => handleIndividualSync(game.id)} disabled={isSyncing} className={`btn-icon btn-icon-sync ${isSyncing ? 'animate-pulse' : ''}`} data-tooltip="Sincronizar"><RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} /></button>
+                                        <button onClick={() => startEdit(game)} className="btn-icon btn-icon-edit" data-tooltip="Editar"><Pencil className="w-3.5 h-3.5" /></button>
+                                        <button onClick={() => removeGame(game.id)} className="btn-icon btn-icon-delete" data-tooltip="Excluir"><Trash2 className="w-3.5 h-3.5" /></button>
                                     </> : undefined}
                                 >
                                     <h3 className="text-lg font-bold text-white line-clamp-2 leading-snug">{game.title}</h3>
