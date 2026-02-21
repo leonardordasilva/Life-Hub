@@ -791,6 +791,11 @@ export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = ({ 
                                                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${item.status === 'COMPLETED' ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' : item.status === 'WATCHING' ? 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20' : 'text-slate-400 bg-white/5 border-white/10'}`}>{getStatusLabel(item.status)}</span>
                                                     {isAdmin && item.status === 'WATCHING' && <button onClick={() => incrementProgress(item)} className="flex items-center gap-1 text-[10px] text-yellow-400 font-bold hover:text-white px-2 py-1 bg-yellow-500/10 rounded border border-yellow-500/20 transition-colors"><PlayCircle className="w-3 h-3" />+1 Ep</button>}
                                                 </div>
+                                                {isAdmin && item.status === 'PENDING' && (
+                                                    <button onClick={() => updateStatus(item.id, 'WATCHING')} className="w-full py-1.5 rounded-lg text-[11px] font-bold bg-yellow-600/20 text-yellow-400 hover:bg-yellow-600 hover:text-white transition-all border border-yellow-500/20 flex items-center justify-center gap-1.5">
+                                                        <PlayCircle className="w-3.5 h-3.5" /> Começar a Ver
+                                                    </button>
+                                                )}
                                             </PosterCard>
                                         );
                                     })}
