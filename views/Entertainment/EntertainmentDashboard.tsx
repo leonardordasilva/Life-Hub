@@ -601,11 +601,25 @@ export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = ({ 
                     </div>
                 </header>
 
-                <div className="flex gap-2 mb-8 border-b border-white/10 pb-1 overflow-x-auto">
-                    <button onClick={() => handleTabChange('SERIES')} className={`flex items-center gap-2 px-6 py-3 rounded-t-lg transition-colors font-medium border-b-2 whitespace-nowrap ${activeTab === 'SERIES' ? 'border-pink-500 text-pink-400 bg-white/5' : 'border-transparent text-slate-400 hover:text-white hover:bg-white/5'}`}><Tv className="w-4 h-4" /> Séries</button>
-                    <button onClick={() => handleTabChange('MOVIES')} className={`flex items-center gap-2 px-6 py-3 rounded-t-lg transition-colors font-medium border-b-2 whitespace-nowrap ${activeTab === 'MOVIES' ? 'border-pink-500 text-pink-400 bg-white/5' : 'border-transparent text-slate-400 hover:text-white hover:bg-white/5'}`}><Film className="w-4 h-4" /> Filmes</button>
-                    <button onClick={() => handleTabChange('ANIME')} className={`flex items-center gap-2 px-6 py-3 rounded-t-lg transition-colors font-medium border-b-2 whitespace-nowrap ${activeTab === 'ANIME' ? 'border-pink-500 text-pink-400 bg-white/5' : 'border-transparent text-slate-400 hover:text-white hover:bg-white/5'}`}><Zap className="w-4 h-4" /> Animes</button>
-                    <button onClick={() => handleTabChange('BOOKS')} className={`flex items-center gap-2 px-6 py-3 rounded-t-lg transition-colors font-medium border-b-2 whitespace-nowrap ${activeTab === 'BOOKS' ? 'border-pink-500 text-pink-400 bg-white/5' : 'border-transparent text-slate-400 hover:text-white hover:bg-white/5'}`}><Book className="w-4 h-4" /> Livros</button>
+                <div className="flex gap-1 mb-8 bg-slate-800/60 p-1.5 rounded-2xl border border-white/5 overflow-x-auto">
+                    {([
+                        { id: 'SERIES' as const, label: 'Séries', icon: <Tv className="w-4 h-4" /> },
+                        { id: 'MOVIES' as const, label: 'Filmes', icon: <Film className="w-4 h-4" /> },
+                        { id: 'ANIME' as const, label: 'Animes', icon: <Zap className="w-4 h-4" /> },
+                        { id: 'BOOKS' as const, label: 'Livros', icon: <Book className="w-4 h-4" /> },
+                    ]).map(tab => (
+                        <button
+                            key={tab.id}
+                            onClick={() => handleTabChange(tab.id)}
+                            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 whitespace-nowrap ${
+                                activeTab === tab.id
+                                    ? 'bg-gradient-to-r from-pink-600 to-pink-500 text-white shadow-lg shadow-pink-900/30'
+                                    : 'text-slate-400 hover:text-white hover:bg-white/5'
+                            }`}
+                        >
+                            {tab.icon} {tab.label}
+                        </button>
+                    ))}
                 </div>
 
                 {loading ? (
