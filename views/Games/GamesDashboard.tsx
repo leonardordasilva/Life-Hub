@@ -428,7 +428,7 @@ export const GamesDashboard: React.FC<GamesDashboardProps> = ({ role }) => {
 
                                 <div><label className="label-std">Plataforma</label><input className="input-std" value={platform} onChange={e => setPlatform(e.target.value)} /></div>
                                 <div><label className="label-std">Status</label><select className="input-std" value={status} onChange={e => setStatus(e.target.value as MediaStatus)}><option value="PENDING">Backlog</option><option value="WATCHING">Jogando</option><option value="COMPLETED">Zerado</option><option value="CASUAL">Casual</option></select></div>
-                                <div className="flex gap-3 mt-6"><button type="button" onClick={() => setShowModal(false)} className="btn btn-md btn-ghost flex-1">Cancelar</button><button type="submit" disabled={submitting} className="btn btn-md btn-violet flex-1">{submitting && <Loader2 className="w-4 h-4 animate-spin" />} Salvar</button></div>
+                                <div className="flex gap-3 mt-6"><button type="button" onClick={() => setShowModal(false)} className="btn btn-md btn-ghost flex-1">Cancelar</button><button type="submit" disabled={submitting || rawgLoading} className="btn btn-md btn-violet flex-1">{submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : rawgLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} {rawgLoading ? 'Buscando...' : 'Salvar'}</button></div>
                             </form>
                         </div>
                     </div>

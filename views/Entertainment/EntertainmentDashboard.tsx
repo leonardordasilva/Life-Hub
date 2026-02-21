@@ -1099,7 +1099,7 @@ export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = ({ 
                                     <div><label className={labelClass}>Data Lançamento</label><input type="date" disabled={submitting} className={inputClass} value={releaseDate} onChange={e => setReleaseDate(e.target.value)} /></div>
                                 )}
 
-                                <div className="flex gap-4 mt-6"><button type="button" disabled={submitting} onClick={() => setShowModal(false)} className="btn btn-lg btn-ghost flex-1">Cancelar</button><button type="submit" disabled={submitting} className="btn btn-lg btn-pink flex-1">{submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} Salvar</button></div>
+                                <div className="flex gap-4 mt-6"><button type="button" disabled={submitting || tmdbLoading} onClick={() => setShowModal(false)} className="btn btn-lg btn-ghost flex-1">Cancelar</button><button type="submit" disabled={submitting || tmdbLoading} className="btn btn-lg btn-pink flex-1">{submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : tmdbLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} {tmdbLoading ? 'Buscando...' : 'Salvar'}</button></div>
                             </form>
                         </div>
                     </div>
