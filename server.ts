@@ -47,13 +47,23 @@ function setCache(key: string, data: any): void {
   apiCache.set(key, { data, expiry: Date.now() + CACHE_TTL });
 }
 
-function sanitizeString(s: any): string {
+function sanitizeString(s: any, maxLen = 500): string {
   if (typeof s !== 'string') return '';
-  return s.replace(/[<>]/g, '').trim().slice(0, 500);
+  return s.replace(/[<>]/g, '').trim().slice(0, maxLen);
 }
 
 function isValidId(id: string): boolean {
-  return /^[a-zA-Z0-9_-]+$/.test(id);
+  return /^[a-zA-Z0-9_-]+$/.test(id) && id.length <= 50;
+}
+
+function isValidOLPath(p: string): boolean {
+  // Only allow safe OpenLibrary paths: alphanumeric, slashes, dots, hyphens, underscores
+  // Block path traversal (.. or leading /)
+  return /^[a-zA-Z0-9][a-zA-Z0-9/._-]*$/.test(p) && !p.includes('..');
+}
+
+function sanitizeCacheKey(key: string): string {
+  return key.replace(/[^a-zA-Z0-9:_.-]/g, '_').slice(0, 200);
 }
 
 if (!TMDB_API_KEY || !RAWG_API_KEY) {
@@ -176,11 +186,11 @@ async function startServer() {
   // OpenLibrary Proxy
   app.get("/api/openlibrary/*path", async (req, res) => {
     const olPath = sanitizeString(req.params.path);
-    if (!olPath) return res.status(400).json({ error: "Path required" });
+    if (!olPath || !isValidOLPath(olPath)) return res.status(400).json({ error: "Invalid path" });
     const query = new URLSearchParams(req.query as any).toString();
     const url = `https://openlibrary.org/${olPath}${query ? '?' + query : ''}`;
 
-    const cacheKey = `ol:${olPath}:${query}`;
+    const cacheKey = sanitizeCacheKey(`ol:${olPath}:${query}`);
     const cached = getCached(cacheKey);
     if (cached) return res.json(cached);
     
@@ -200,9 +210,10 @@ async function startServer() {
     if (!GEMINI_API_KEY) {
       return res.status(500).json({ error: "Gemini API key not configured" });
     }
-    const { prompt, model } = req.body;
-    if (!prompt || typeof prompt !== 'string') {
-      return res.status(400).json({ error: "Missing or invalid prompt" });
+    const prompt = sanitizeString(req.body.prompt, 5000);
+    const model = sanitizeString(req.body.model, 100);
+    if (!prompt) {
+      return res.status(400).json({ error: "Missing or invalid prompt (1-5000 chars)" });
     }
     try {
       const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
@@ -221,9 +232,9 @@ async function startServer() {
     if (!GEMINI_API_KEY) {
       return res.status(500).json({ error: "Gemini API key not configured" });
     }
-    const { text } = req.body;
-    if (!text || typeof text !== 'string' || text.trim().length === 0) {
-      return res.json({ text: text || '' });
+    const text = sanitizeString(req.body.text, 5000);
+    if (!text) {
+      return res.json({ text: req.body.text || '' });
     }
     try {
       const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
@@ -242,9 +253,10 @@ async function startServer() {
     if (!GEMINI_API_KEY) {
       return res.status(500).json({ error: "Gemini API key not configured" });
     }
-    const { title, type } = req.body;
-    if (!title || !type || typeof title !== 'string' || typeof type !== 'string') {
-      return res.status(400).json({ error: "Missing title or type" });
+    const title = sanitizeString(req.body.title, 500);
+    const type = sanitizeString(req.body.type, 50);
+    if (!title || !type) {
+      return res.status(400).json({ error: "Missing or invalid title/type" });
     }
     try {
       const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
