@@ -11,7 +11,7 @@ interface CategoryManagerProps {
 
 export const CategoryManager: React.FC<CategoryManagerProps> = ({ categories, onAdd, onEdit, onRemove }) => {
   const [newName, setNewName] = useState('');
-  const [newType, setNewType] = useState<TransactionType>('EXPENSE');
+  const [newType, setNewType] = useState<TransactionType>('INCOME');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -27,7 +27,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ categories, on
           await onAdd(newName, newType);
         }
         setNewName('');
-        setNewType('EXPENSE'); // Reset default
+        setNewType('INCOME');
       } finally {
         setSubmitting(false);
       }
@@ -43,7 +43,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ categories, on
   const cancelEdit = () => {
     setEditingId(null);
     setNewName('');
-    setNewType('EXPENSE');
+    setNewType('INCOME');
   };
 
   return (
