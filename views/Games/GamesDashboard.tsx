@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useGames } from '../../hooks/useGames';
+import { GameSyncDiff } from '../../hooks/useGames';
 import { MediaStatus, EntertainmentItem, UserRole } from '../../types';
 import { searchGame, searchGamesMany, getGameDetails, RawgResult } from '../../services/rawgService';
 import { translateToPortuguese } from '../../services/geminiService';
@@ -68,7 +69,7 @@ interface GamesDashboardProps {
 }
 
 export const GamesDashboard: React.FC<GamesDashboardProps> = ({ role }) => {
-    const { games, loading, addGame, editGame, syncGame, syncAllGames, removeGame, updateGameStatus } = useGames();
+    const { games, loading, addGame, editGame, syncGame, checkMetadataSync, applyBatchUpdates, removeGame, updateGameStatus } = useGames();
     const { showToast } = useToast();
     const isAdmin = role === 'ADMIN';
 
@@ -81,7 +82,8 @@ export const GamesDashboard: React.FC<GamesDashboardProps> = ({ role }) => {
     const [syncingId, setSyncingId] = useState<string | null>(null);
 
     // Sync All State
-    const [syncAllState, setSyncAllState] = useState<{ isOpen: boolean; stage: 'PROGRESS' | 'DONE'; progress: number; total: number; currentTitle: string }>({ isOpen: false, stage: 'PROGRESS', progress: 0, total: 0, currentTitle: '' });
+    const [syncState, setSyncState] = useState<{ isOpen: boolean; stage: 'PROGRESS' | 'REVIEW' | 'SUMMARY'; progress: number; total: number; currentTitle: string; diffs: GameSyncDiff[] }>({ isOpen: false, stage: 'PROGRESS', progress: 0, total: 0, currentTitle: '', diffs: [] });
+    const [selectedDiffs, setSelectedDiffs] = useState<Set<string>>(new Set());
 
     // Multi-select State
     const [candidates, setCandidates] = useState<RawgResult[]>([]);
@@ -266,13 +268,23 @@ export const GamesDashboard: React.FC<GamesDashboardProps> = ({ role }) => {
                     {isAdmin && games.length > 0 && (
                         <button
                             onClick={async () => {
-                                setSyncAllState({ isOpen: true, stage: 'PROGRESS', progress: 0, total: games.length, currentTitle: 'Iniciando...' });
-                                await syncAllGames((curr, total, title) => {
-                                    setSyncAllState(prev => ({ ...prev, progress: curr, total, currentTitle: title }));
-                                });
-                                setSyncAllState(prev => ({ ...prev, stage: 'DONE' }));
+                                setSyncState({ isOpen: true, stage: 'PROGRESS', progress: 0, total: games.length, currentTitle: 'Iniciando...', diffs: [] });
+                                try {
+                                    const diffs = await checkMetadataSync((curr: number, total: number, title: string) => {
+                                        setSyncState(prev => ({ ...prev, progress: curr, total, currentTitle: title }));
+                                    });
+                                    if (diffs.length > 0) {
+                                        setSyncState(prev => ({ ...prev, stage: 'REVIEW', diffs }));
+                                        setSelectedDiffs(new Set(diffs.map(d => d.id)));
+                                    } else {
+                                        setSyncState(prev => ({ ...prev, stage: 'SUMMARY', diffs: [] }));
+                                    }
+                                } catch (e) {
+                                    setSyncState(prev => ({ ...prev, isOpen: false }));
+                                    showToast('Erro ao sincronizar dados.', 'error');
+                                }
                             }}
-                            disabled={syncAllState.isOpen}
+                            disabled={syncState.isOpen}
                             className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-600/20 to-purple-600/20 hover:from-violet-600 hover:to-purple-600 text-violet-400 hover:text-white rounded-xl text-xs font-bold transition-all duration-300 border border-violet-500/30 hover:border-violet-400 hover:shadow-lg hover:shadow-violet-900/30"
                         >
                             <RefreshCw className="w-3.5 h-3.5" /> Sincronizar Tudo
@@ -398,30 +410,7 @@ export const GamesDashboard: React.FC<GamesDashboardProps> = ({ role }) => {
                     </div>
                 )}
 
-                {/* SYNC ALL MODAL */}
-                {syncAllState.isOpen && (
-                    <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 z-[100] animate-in zoom-in duration-200">
-                        <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-xl p-8 shadow-2xl overflow-hidden relative">
-                            {syncAllState.stage === 'PROGRESS' && (
-                                <div className="text-center py-12">
-                                    <RefreshCw className="w-16 h-16 text-violet-500 animate-spin mx-auto mb-6" />
-                                    <h3 className="text-2xl font-bold text-white mb-2">Sincronizando Jogos...</h3>
-                                    <p className="text-slate-400 mb-8">Consultando API RAWG ({syncAllState.progress}/{syncAllState.total})</p>
-                                    <div className="w-full bg-slate-800 rounded-full h-2 mb-4"><div className="bg-violet-500 h-2 rounded-full transition-all" style={{ width: `${syncAllState.total ? (syncAllState.progress / syncAllState.total) * 100 : 0}%` }} /></div>
-                                    <p className="text-xs text-violet-400 font-mono italic">Atual: {syncAllState.currentTitle}</p>
-                                </div>
-                            )}
-                            {syncAllState.stage === 'DONE' && (
-                                <div className="text-center py-12">
-                                    <div className="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-6"><Check className="w-8 h-8" /></div>
-                                    <h3 className="text-2xl font-bold text-white mb-2">Sincronização Concluída!</h3>
-                                    <p className="text-slate-400 mb-8">{syncAllState.total} jogos sincronizados com sucesso.</p>
-                                    <button onClick={() => setSyncAllState(prev => ({ ...prev, isOpen: false }))} className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-colors">Fechar</button>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}
+
             </div>
             <style>{`.input-std{width:100%;background:#1e293b;border:1px solid #334155;border-radius:0.5rem;padding:0.5rem 0.75rem;color:white;outline:none;font-size:0.875rem}.input-std:focus{border-color:#8b5cf6;ring:1px solid #8b5cf6}.label-std{display:block;font-size:0.75rem;color:#94a3b8;margin-bottom:0.25rem;font-weight:500}`}</style>
         </div>
