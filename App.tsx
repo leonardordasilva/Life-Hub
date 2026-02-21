@@ -19,7 +19,7 @@ import {
   Settings,
   LogOut
 } from 'lucide-react';
-import { supabase } from './src/integrations/supabase/client';
+import { supabase } from './services/supabaseClient';
 
 const App: React.FC = () => {
   const [currentSection, setCurrentSection] = useState<AppSection>(AppSection.HOME);

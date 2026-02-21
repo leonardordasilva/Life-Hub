@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { EntertainmentItem, MediaStatus, MediaType } from '../types';
-import { supabase } from '../src/integrations/supabase/client';
+import { supabase } from '../services/supabaseClient';
 import { searchGame } from '../services/rawgService';
 import { translateToPortuguese } from '../services/geminiService';
 import { useToast } from '../components/Toast';

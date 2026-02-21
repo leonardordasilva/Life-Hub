@@ -1,4 +1,4 @@
-import { supabase } from '../src/integrations/supabase/client';
+import { supabase } from './supabaseClient';
 
 export interface RawgResult {
   id?: number;
