@@ -5,7 +5,7 @@ import { CategoryManager } from './CategoryManager';
 import { TransactionManager } from './TransactionManager';
 import { AnnualReport } from './AnnualReport';
 import { ReserveManager } from './ReserveManager';
-import { LayoutDashboard, Tag, FileText, Wallet, AlertTriangle } from 'lucide-react';
+import { LayoutDashboard, Tag, FileText, Wallet, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { UserRole } from '../../types';
 
 interface FinanceDashboardProps {
@@ -29,7 +29,20 @@ export const FinanceDashboard: React.FC<FinanceDashboardProps> = ({ role }) => {
   } = useFinanceData(role, handleError);
 
   const [activeTab, setActiveTab] = useState<'categories' | 'transactions' | 'report'>(role === 'ADMIN' ? 'categories' : 'report');
-  const [year, setYear] = useState(2026);
+  const [year, setYear] = useState(new Date().getFullYear());
+
+  // Compute years that have transactions
+  const yearsWithData = useMemo(() => {
+    return new Set(transactions.map(t => t.year));
+  }, [transactions]);
+
+  // Visible years: range centered on selected + all years with data
+  const visibleYears = useMemo(() => {
+    const range = new Set<number>();
+    for (let i = year - 2; i <= year + 2; i++) range.add(i);
+    yearsWithData.forEach(y => range.add(y));
+    return Array.from(range).sort((a, b) => a - b);
+  }, [year, yearsWithData]);
 
   const initialReserve = getReserveForYear(year);
 
@@ -70,17 +83,40 @@ export const FinanceDashboard: React.FC<FinanceDashboardProps> = ({ role }) => {
             </div>
           </div>
           
-          <div className="flex items-center gap-4 bg-white/5 p-2 rounded-xl border border-white/10">
-            <span className="text-sm font-medium text-slate-400 ml-2">Ano Base:</span>
-            <select 
-              value={year} 
-              onChange={(e) => setYear(parseInt(e.target.value))}
-              className="bg-slate-800 border border-slate-700 text-white text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block p-2"
+          <div className="flex items-center gap-1 bg-white/5 border border-white/10 px-2 py-1.5 rounded-xl">
+            <button
+              onClick={() => setYear(prev => prev - 1)}
+              className="p-1.5 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors"
             >
-              {Array.from({length: 5}, (_, i) => 2026 + i).map(y => (
-                <option key={y} value={y}>{y}</option>
-              ))}
-            </select>
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <div className="flex gap-1 overflow-x-auto custom-scrollbar px-1">
+              {visibleYears.map(y => {
+                const hasData = yearsWithData.has(y);
+                const isSelected = y === year;
+                return (
+                  <button
+                    key={y}
+                    onClick={() => setYear(y)}
+                    className={`relative px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${
+                      isSelected
+                        ? 'bg-amber-600 text-white shadow-lg shadow-amber-900/30'
+                        : hasData
+                          ? 'bg-amber-800/40 text-amber-200 border border-amber-500/40 hover:bg-amber-700/50'
+                          : 'text-slate-500 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    {y}
+                  </button>
+                );
+              })}
+            </div>
+            <button
+              onClick={() => setYear(prev => prev + 1)}
+              className="p-1.5 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
           </div>
         </header>
 
