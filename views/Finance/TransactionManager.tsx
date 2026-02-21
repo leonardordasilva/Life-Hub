@@ -158,14 +158,20 @@ export const TransactionManager: React.FC<TransactionManagerProps> = ({
             </div>
 
             <div className="flex gap-2 mt-4">
-              <button
-                type="submit"
-                disabled={!selectedCatId || !amount || submitting}
-                className={`btn btn-md flex-1 ${editingId ? 'btn-amber' : 'btn-success'}`}
-              >
-                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : (editingId ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />)}
-                {submitting ? 'Salvando...' : (editingId ? 'Salvar' : 'Lançar')}
-              </button>
+              {(() => {
+                const selectedType = selectedCatId ? getCategoryType(selectedCatId) : null;
+                const btnClass = editingId ? 'btn-amber' : selectedType === 'INCOME' ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/30' : selectedType === 'EXPENSE' ? 'bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-900/30' : 'btn-success';
+                return (
+                  <button
+                    type="submit"
+                    disabled={!selectedCatId || !amount || submitting}
+                    className={`btn btn-md flex-1 ${btnClass}`}
+                  >
+                    {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : (editingId ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />)}
+                    {submitting ? 'Salvando...' : (editingId ? 'Salvar' : 'Lançar')}
+                  </button>
+                );
+              })()}
               
               {editingId && (
                 <button
