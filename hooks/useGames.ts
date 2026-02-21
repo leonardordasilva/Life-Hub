@@ -132,6 +132,34 @@ export const useGames = () => {
     }
   };
 
+  const syncAllGames = async (onProgress?: (current: number, total: number, title: string) => void) => {
+    const total = games.length;
+    for (let i = 0; i < total; i++) {
+      const game = games[i];
+      onProgress?.(i + 1, total, game.title);
+      try {
+        const result = await searchGame(game.title);
+        if (result) {
+          const translatedSynopsis = result.synopsis
+            ? await translateToPortuguese(result.synopsis)
+            : game.synopsis;
+          await editGame({
+            ...game,
+            title: result.title || game.title,
+            posterUrl: result.posterUrl || game.posterUrl,
+            synopsis: translatedSynopsis || result.synopsis || game.synopsis,
+            genres: result.genres || game.genres,
+            rating: result.rating !== undefined ? result.rating : game.rating,
+            platform: (result.platforms && result.platforms.length > 0) ? result.platforms[0] : game.platform
+          });
+        }
+      } catch (e) {
+        console.error(`Sync error for ${game.title}:`, e);
+      }
+    }
+    await fetchGames();
+  };
+
   const removeGame = async (id: string) => {
     const { error } = await supabase
       .from('ent_games')
@@ -149,5 +177,5 @@ export const useGames = () => {
     }
   };
 
-  return { games, loading, addGame, editGame, syncGame, removeGame, updateGameStatus };
+  return { games, loading, addGame, editGame, syncGame, syncAllGames, removeGame, updateGameStatus };
 };

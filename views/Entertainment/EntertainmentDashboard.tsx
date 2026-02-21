@@ -643,7 +643,7 @@ export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = ({ 
                                             <button key={f.id} onClick={() => { setSeriesFilter(f.id as any); setCurrentPage(1); }} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${seriesFilter === f.id ? 'bg-pink-600 text-white shadow-lg shadow-pink-900/20' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white'}`}>{f.label}</button>
                                         ))}
                                     </div>
-                                    {isAdmin && series.length > 0 && <button onClick={() => handleSync('SERIES')} disabled={syncState.isOpen} className="flex items-center gap-2 px-3 py-1.5 bg-slate-800 hover:bg-pink-600/20 hover:text-pink-400 text-slate-400 rounded-lg text-xs font-medium transition-colors border border-white/5"><RefreshCw className="w-3 h-3" /> Sincronizar Tudo</button>}
+                                    {isAdmin && series.length > 0 && <button onClick={() => handleSync('SERIES')} disabled={syncState.isOpen} className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-pink-600/20 to-purple-600/20 hover:from-pink-600 hover:to-purple-600 text-pink-400 hover:text-white rounded-xl text-xs font-bold transition-all duration-300 border border-pink-500/30 hover:border-pink-400 hover:shadow-lg hover:shadow-pink-900/30"><RefreshCw className="w-3.5 h-3.5" /> Sincronizar Tudo</button>}
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {getPaginatedData(filteredSeries).map(item => {
@@ -708,7 +708,7 @@ export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = ({ 
                                             <button key={f.id} onClick={() => { setMovieFilter(f.id as any); setCurrentPage(1); }} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${movieFilter === f.id ? 'bg-pink-600 text-white shadow-lg shadow-pink-900/20' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white'}`}>{f.label}</button>
                                         ))}
                                     </div>
-                                    {isAdmin && movies.length > 0 && <button onClick={() => handleSync('MOVIE')} disabled={syncState.isOpen} className="flex items-center gap-2 px-3 py-1.5 bg-slate-800 hover:bg-pink-600/20 hover:text-pink-400 text-slate-400 rounded-lg text-xs font-medium transition-colors border border-white/5"><RefreshCw className="w-3 h-3" /> Sincronizar Tudo</button>}
+                                    {isAdmin && movies.length > 0 && <button onClick={() => handleSync('MOVIE')} disabled={syncState.isOpen} className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-pink-600/20 to-purple-600/20 hover:from-pink-600 hover:to-purple-600 text-pink-400 hover:text-white rounded-xl text-xs font-bold transition-all duration-300 border border-pink-500/30 hover:border-pink-400 hover:shadow-lg hover:shadow-pink-900/30"><RefreshCw className="w-3.5 h-3.5" /> Sincronizar Tudo</button>}
                                 </div>
                                 {movieFilter === 'COMPLETED' && groupedCompletedMovies ? (
                                     <div className="space-y-8">
@@ -778,7 +778,7 @@ export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = ({ 
                                             <button key={f.id} onClick={() => { setAnimeFilter(f.id as any); setCurrentPage(1); }} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${animeFilter === f.id ? 'bg-yellow-600 text-white shadow-lg shadow-yellow-900/20' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white'}`}>{f.label}</button>
                                         ))}
                                     </div>
-                                    {isAdmin && animes.length > 0 && <button onClick={() => handleSync('ANIME')} disabled={syncState.isOpen} className="flex items-center gap-2 px-3 py-1.5 bg-slate-800 hover:bg-yellow-600/20 hover:text-yellow-400 text-slate-400 rounded-lg text-xs font-medium border border-white/5"><RefreshCw className="w-3 h-3" /> Sincronizar Tudo</button>}
+                                    {isAdmin && animes.length > 0 && <button onClick={() => handleSync('ANIME')} disabled={syncState.isOpen} className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-600/20 to-amber-600/20 hover:from-yellow-600 hover:to-amber-600 text-yellow-400 hover:text-white rounded-xl text-xs font-bold transition-all duration-300 border border-yellow-500/30 hover:border-yellow-400 hover:shadow-lg hover:shadow-yellow-900/30"><RefreshCw className="w-3.5 h-3.5" /> Sincronizar Tudo</button>}
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {getPaginatedData(sortedAnimes).map(item => {
@@ -821,7 +821,7 @@ export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = ({ 
 
                         {activeTab === 'BOOKS' && (
                             <>
-                                <div className="flex justify-end mb-2">{isAdmin && books.length > 0 && <button onClick={() => handleSync('BOOK')} disabled={syncState.isOpen} className="flex items-center gap-2 px-3 py-1.5 bg-slate-800 hover:bg-pink-600/20 hover:text-pink-400 text-slate-400 rounded-lg text-xs font-medium border border-white/5"><RefreshCw className="w-3 h-3" /> Sincronizar Tudo</button>}</div>
+                                <div className="flex justify-end mb-2">{isAdmin && books.length > 0 && <button onClick={() => handleSync('BOOK')} disabled={syncState.isOpen} className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-pink-600/20 to-purple-600/20 hover:from-pink-600 hover:to-purple-600 text-pink-400 hover:text-white rounded-xl text-xs font-bold transition-all duration-300 border border-pink-500/30 hover:border-pink-400 hover:shadow-lg hover:shadow-pink-900/30"><RefreshCw className="w-3.5 h-3.5" /> Sincronizar Tudo</button>}</div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {getPaginatedData(filteredBooks).map(item => {
                                         const isSyncing = syncingId === item.id;
