@@ -5,6 +5,17 @@ import { searchGame } from '../services/rawgService';
 import { translateToPortuguese } from '../services/geminiService';
 import { useToast } from '../components/Toast';
 
+export interface GameSyncDiff {
+  id: string;
+  title: string;
+  fullData?: any;
+}
+
+const formatRating = (rating?: number): number => {
+  if (rating === undefined || rating === null) return 0;
+  return Math.round(rating * 10) / 10;
+};
+
 export const useGames = () => {
   const [games, setGames] = useState<EntertainmentItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -132,29 +143,66 @@ export const useGames = () => {
     }
   };
 
-  const syncAllGames = async (onProgress?: (current: number, total: number, title: string) => void) => {
+  const checkMetadataSync = async (
+    onProgress: (current: number, total: number, title: string) => void
+  ): Promise<GameSyncDiff[]> => {
+    const diffs: GameSyncDiff[] = [];
     const total = games.length;
+
     for (let i = 0; i < total; i++) {
       const game = games[i];
-      onProgress?.(i + 1, total, game.title);
+      onProgress(i + 1, total, game.title);
       try {
         const result = await searchGame(game.title);
         if (result) {
-          const translatedSynopsis = result.synopsis
-            ? await translateToPortuguese(result.synopsis)
-            : game.synopsis;
-          await editGame({
-            ...game,
-            title: result.title || game.title,
-            posterUrl: result.posterUrl || game.posterUrl,
-            synopsis: translatedSynopsis || result.synopsis || game.synopsis,
-            genres: result.genres || game.genres,
-            rating: result.rating !== undefined ? result.rating : game.rating,
-            platform: (result.platforms && result.platforms.length > 0) ? result.platforms[0] : game.platform
-          });
+          let hasChanges = false;
+
+          if (result.synopsis && result.synopsis !== game.synopsis) hasChanges = true;
+          if (result.posterUrl && result.posterUrl !== game.posterUrl) hasChanges = true;
+          if (result.genres && JSON.stringify(result.genres) !== JSON.stringify(game.genres)) hasChanges = true;
+
+          const currentRating = formatRating(game.rating);
+          const newRating = formatRating(result.rating);
+          if (newRating !== currentRating) hasChanges = true;
+
+          if (result.platforms && result.platforms.length > 0 && result.platforms[0] !== game.platform) hasChanges = true;
+          if (!game.externalId && result.id) hasChanges = true;
+
+          if (hasChanges) {
+            diffs.push({
+              id: game.id,
+              title: game.title,
+              fullData: result
+            });
+          }
         }
       } catch (e) {
-        console.error(`Sync error for ${game.title}:`, e);
+        console.error(`Sync check error for ${game.title}:`, e);
+      }
+    }
+    return diffs;
+  };
+
+  const applyBatchUpdates = async (diffsToApply: GameSyncDiff[]) => {
+    for (const diff of diffsToApply) {
+      if (diff.fullData) {
+        const game = games.find(g => g.id === diff.id);
+        if (game) {
+          const translatedSynopsis = diff.fullData.synopsis
+            ? await translateToPortuguese(diff.fullData.synopsis)
+            : game.synopsis;
+
+          await editGame({
+            ...game,
+            title: diff.fullData.title || game.title,
+            posterUrl: diff.fullData.posterUrl || game.posterUrl,
+            synopsis: translatedSynopsis || diff.fullData.synopsis || game.synopsis,
+            genres: diff.fullData.genres || game.genres,
+            rating: diff.fullData.rating !== undefined ? formatRating(diff.fullData.rating) : game.rating,
+            platform: (diff.fullData.platforms && diff.fullData.platforms.length > 0) ? diff.fullData.platforms[0] : game.platform,
+            externalId: diff.fullData.id?.toString() || game.externalId
+          });
+        }
       }
     }
     await fetchGames();
@@ -177,5 +225,5 @@ export const useGames = () => {
     }
   };
 
-  return { games, loading, addGame, editGame, syncGame, syncAllGames, removeGame, updateGameStatus };
+  return { games, loading, addGame, editGame, syncGame, checkMetadataSync, applyBatchUpdates, removeGame, updateGameStatus };
 };
