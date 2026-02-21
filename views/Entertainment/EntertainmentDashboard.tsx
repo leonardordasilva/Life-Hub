@@ -7,7 +7,7 @@ import { translateToPortuguese } from '../../services/geminiService';
 import { useToast } from '../../components/Toast';
 import { Film, Tv, Book, Plus, Trash2, Calendar, User, List, CheckCircle, Clock, PlayCircle, Pencil, Check, Filter, Zap, PauseCircle, ChevronLeft, ChevronRight, Search, X, Loader2, Image as ImageIcon, BarChart2, Layers, RefreshCw, AlertTriangle, ArrowRight, Bookmark, Star } from 'lucide-react';
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 6;
 
 const StatCard = ({ label, value, icon, colorClass }: { label: string, value: number, icon: React.ReactNode, colorClass: string }) => (
     <div className={`bg-slate-800/50 border border-white/5 rounded-xl p-4 flex items-center gap-4 hover:border-white/10 transition-colors ${colorClass}`}>
