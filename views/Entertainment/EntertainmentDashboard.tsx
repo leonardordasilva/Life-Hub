@@ -628,13 +628,13 @@ export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = ({ 
                                             <PosterCard key={item.id} item={item}>
                                                 <div className="flex justify-between items-start mb-4">
                                                     <h3 className="text-xl font-bold text-white pr-2 line-clamp-1">{item.title}</h3>
-                                    <div className="flex gap-1 shrink-0">
-                                        <button onClick={() => setSelectedDetailItem(item)} className="btn-icon btn-icon-info" title="Detalhes"><Info className="w-4 h-4" /></button>
+                                    <div className="flex gap-1 shrink-0 bg-black/30 backdrop-blur-sm rounded-lg p-1">
+                                        <button onClick={() => setSelectedDetailItem(item)} className="btn-icon btn-icon-info" title="Detalhes"><Info className="w-3.5 h-3.5" /></button>
                                         {isAdmin && (
                                             <>
-                                                <button onClick={() => handleIndividualSync(item.id)} disabled={isSyncing} className={`btn-icon btn-icon-sync ${isSyncing ? 'animate-pulse' : ''}`} title="Sincronizar Dados"><RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} /></button>
-                                                <button onClick={() => startEdit(item)} className="btn-icon btn-icon-edit"><Pencil className="w-4 h-4" /></button>
-                                                <button onClick={() => removeItem(item.id)} className="btn-icon btn-icon-delete"><Trash2 className="w-4 h-4" /></button>
+                                                <button onClick={() => handleIndividualSync(item.id)} disabled={isSyncing} className={`btn-icon btn-icon-sync ${isSyncing ? 'animate-pulse' : ''}`} title="Sincronizar Dados"><RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} /></button>
+                                                <button onClick={() => startEdit(item)} className="btn-icon btn-icon-edit"><Pencil className="w-3.5 h-3.5" /></button>
+                                                <button onClick={() => removeItem(item.id)} className="btn-icon btn-icon-delete"><Trash2 className="w-3.5 h-3.5" /></button>
                                             </>
                                         )}
                                     </div>
@@ -703,13 +703,13 @@ export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = ({ 
                                                         return (
                                                             <PosterCard key={item.id} item={item}>
                                                                 <div className="flex justify-between items-start"><div className="p-2.5 bg-pink-500/20 rounded-full text-pink-400 mb-4 w-fit"><Film className="w-5 h-5" /></div>
-                                                                    <div className="flex gap-1">
-                                                                        <button onClick={() => setSelectedDetailItem(item)} className="p-1.5 bg-black/40 hover:bg-pink-500 rounded-lg text-white transition-colors"><Info className="w-4 h-4" /></button>
+                                                                    <div className="flex gap-1 bg-black/30 backdrop-blur-sm rounded-lg p-1">
+                                                                        <button onClick={() => setSelectedDetailItem(item)} className="btn-icon btn-icon-info"><Info className="w-3.5 h-3.5" /></button>
                                                                         {isAdmin && (
                                                                             <>
-                                                                                <button onClick={() => handleIndividualSync(item.id)} disabled={isSyncing} className="p-1.5 bg-black/40 hover:bg-emerald-500 rounded-lg text-white transition-colors" title="Sincronizar Dados"><RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} /></button>
-                                                                                <button onClick={() => startEdit(item)} className="p-1.5 bg-black/40 hover:bg-cyan-500 rounded-lg text-white transition-colors"><Pencil className="w-4 h-4" /></button>
-                                                                                <button onClick={() => removeItem(item.id)} className="p-1.5 bg-black/40 hover:bg-red-500 rounded-lg text-white transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                                                                <button onClick={() => handleIndividualSync(item.id)} disabled={isSyncing} className={`btn-icon btn-icon-sync ${isSyncing ? 'animate-pulse' : ''}`} title="Sincronizar Dados"><RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} /></button>
+                                                                                <button onClick={() => startEdit(item)} className="btn-icon btn-icon-edit"><Pencil className="w-3.5 h-3.5" /></button>
+                                                                                <button onClick={() => removeItem(item.id)} className="btn-icon btn-icon-delete"><Trash2 className="w-3.5 h-3.5" /></button>
                                                                             </>
                                                                         )}
                                                                     </div>
@@ -734,13 +734,13 @@ export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = ({ 
                                                 return (
                                                     <PosterCard key={item.id} item={item}>
                                                         <div className="flex justify-between items-start"><div className="p-2.5 bg-pink-500/20 rounded-full text-pink-400 mb-4 w-fit"><Film className="w-5 h-5" /></div>
-                                                            <div className="flex gap-1">
-                                                                <button onClick={() => setSelectedDetailItem(item)} className="p-1.5 bg-black/40 hover:bg-pink-500 rounded-lg text-white transition-colors"><Info className="w-4 h-4" /></button>
+                                                            <div className="flex gap-1 bg-black/30 backdrop-blur-sm rounded-lg p-1">
+                                                                <button onClick={() => setSelectedDetailItem(item)} className="btn-icon btn-icon-info"><Info className="w-3.5 h-3.5" /></button>
                                                                 {isAdmin && (
                                                                     <>
-                                                                        <button onClick={() => handleIndividualSync(item.id)} disabled={isSyncing} className="p-1.5 bg-black/40 hover:bg-emerald-500 rounded-lg text-white transition-colors" title="Sincronizar Dados"><RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} /></button>
-                                                                        <button onClick={() => startEdit(item)} className="p-1.5 bg-black/40 hover:bg-cyan-500 rounded-lg text-white transition-colors"><Pencil className="w-4 h-4" /></button>
-                                                                        <button onClick={() => removeItem(item.id)} className="p-1.5 bg-black/40 hover:bg-red-500 rounded-lg text-white transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                                                        <button onClick={() => handleIndividualSync(item.id)} disabled={isSyncing} className={`btn-icon btn-icon-sync ${isSyncing ? 'animate-pulse' : ''}`} title="Sincronizar Dados"><RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} /></button>
+                                                                        <button onClick={() => startEdit(item)} className="btn-icon btn-icon-edit"><Pencil className="w-3.5 h-3.5" /></button>
+                                                                        <button onClick={() => removeItem(item.id)} className="btn-icon btn-icon-delete"><Trash2 className="w-3.5 h-3.5" /></button>
                                                                     </>
                                                                 )}
                                                             </div>
@@ -784,13 +784,13 @@ export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = ({ 
                                             <PosterCard key={item.id} item={item} overlayColor="from-slate-900 via-yellow-900/10">
                                                 <div className="flex justify-between items-start mb-4">
                                                     <div className="flex items-start gap-3"><div className="mt-1 p-2 bg-yellow-500/20 rounded-lg text-yellow-400"><Zap className="w-4 h-4" /></div><h3 className="text-xl font-bold text-white line-clamp-1">{item.title}</h3></div>
-                                                    <div className="flex gap-1 shrink-0">
-                                                        <button onClick={() => setSelectedDetailItem(item)} className="p-1.5 bg-black/40 hover:bg-pink-500 rounded-lg text-white transition-colors" title="Detalhes"><Info className="w-4 h-4" /></button>
+                                                    <div className="flex gap-1 shrink-0 bg-black/30 backdrop-blur-sm rounded-lg p-1">
+                                                        <button onClick={() => setSelectedDetailItem(item)} className="btn-icon btn-icon-info" title="Detalhes"><Info className="w-3.5 h-3.5" /></button>
                                                         {isAdmin && (
                                                             <>
-                                                                <button onClick={() => handleIndividualSync(item.id)} disabled={isSyncing} className="p-1.5 bg-black/40 hover:bg-emerald-500 rounded-lg text-white transition-colors" title="Sincronizar Dados"><RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} /></button>
-                                                                <button onClick={() => startEdit(item)} className="p-1.5 bg-black/40 hover:bg-cyan-500 rounded-lg text-white transition-colors"><Pencil className="w-4 h-4" /></button>
-                                                                <button onClick={() => removeItem(item.id)} className="p-1.5 bg-black/40 hover:bg-red-500 rounded-lg text-white transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                                                <button onClick={() => handleIndividualSync(item.id)} disabled={isSyncing} className={`btn-icon btn-icon-sync ${isSyncing ? 'animate-pulse' : ''}`} title="Sincronizar Dados"><RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} /></button>
+                                                                <button onClick={() => startEdit(item)} className="btn-icon btn-icon-edit"><Pencil className="w-3.5 h-3.5" /></button>
+                                                                <button onClick={() => removeItem(item.id)} className="btn-icon btn-icon-delete"><Trash2 className="w-3.5 h-3.5" /></button>
                                                             </>
                                                         )}
                                                     </div>
@@ -831,7 +831,7 @@ export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = ({ 
                                                     <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 text-sm text-slate-400 mt-1"><span className="flex items-center justify-center md:justify-start gap-1"><User className="w-3 h-3" /> {item.author || 'Autor Desconhecido'}</span><span className="hidden md:inline">•</span><span className="flex items-center justify-center md:justify-start gap-1"><Calendar className="w-3 h-3" /> {formatDate(item.releaseDate)}</span></div>
                                                 </div>
                                                 <div className="flex items-center gap-3 relative z-10">
-                                                    <button onClick={() => setSelectedDetailItem(item)} className="p-2 bg-slate-800 hover:bg-pink-500 rounded-lg text-white transition-colors shadow-lg"><Info className="w-5 h-5" /></button>
+                                                    <button onClick={() => setSelectedDetailItem(item)} className="btn-icon btn-icon-info" title="Detalhes"><Info className="w-4 h-4" /></button>
                                                     <div className={`px-3 py-1 rounded-full text-xs font-bold border ${item.status === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : item.status === 'WATCHING' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' : 'bg-slate-700/50 text-slate-400 border-slate-600'}`}>{getStatusLabel(item.status)}</div>
 
                                                     {isAdmin && (
@@ -860,9 +860,9 @@ export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = ({ 
                                                     )}
 
                                                     {isAdmin && <div className="flex gap-1 ml-2 border-l border-white/10 pl-2">
-                                                        <button onClick={() => handleIndividualSync(item.id)} disabled={isSyncing} className={`p-2 text-slate-500 hover:text-emerald-400 transition-colors ${isSyncing ? 'animate-pulse' : ''}`} title="Sincronizar Dados"><RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} /></button>
-                                                        <button onClick={() => startEdit(item)} className="p-2 text-slate-500 hover:text-cyan-400 hover:bg-cyan-500/10 rounded-lg transition-colors"><Pencil className="w-4 h-4" /></button>
-                                                        <button onClick={() => removeItem(item.id)} className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                                        <button onClick={() => handleIndividualSync(item.id)} disabled={isSyncing} className={`btn-icon btn-icon-sync ${isSyncing ? 'animate-pulse' : ''}`} title="Sincronizar Dados"><RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} /></button>
+                                                        <button onClick={() => startEdit(item)} className="btn-icon btn-icon-edit"><Pencil className="w-3.5 h-3.5" /></button>
+                                                        <button onClick={() => removeItem(item.id)} className="btn-icon btn-icon-delete"><Trash2 className="w-3.5 h-3.5" /></button>
                                                     </div>}
                                                 </div>
                                             </div>
