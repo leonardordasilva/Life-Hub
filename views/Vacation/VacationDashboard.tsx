@@ -150,13 +150,14 @@ export const VacationDashboard: React.FC<VacationDashboardProps> = ({ role }) =>
                      year: tripForm.year || selectedYear,
                      coverUrl: tripForm.coverUrl
                  });
-              } else {
-                 await addTrip({
-                     destination: tripForm.destination,
-                     startDate: tripForm.startDate,
-                     endDate: tripForm.endDate,
-                     year: selectedYear
-                 });
+               } else {
+                  const tripYear = tripForm.startDate ? new Date(tripForm.startDate).getFullYear() : selectedYear;
+                  await addTrip({
+                      destination: tripForm.destination,
+                      startDate: tripForm.startDate,
+                      endDate: tripForm.endDate,
+                      year: tripYear
+                  });
               }
               setShowTripModal(false);
               setEditingTripId(null);
@@ -305,21 +306,15 @@ export const VacationDashboard: React.FC<VacationDashboardProps> = ({ role }) =>
                             <button
                                 key={year}
                                 onClick={() => { setSelectedYear(year); setSelectedTripId(null); }}
-                                className={`relative px-3 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+                                className={`relative px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${
                                     isSelected
                                         ? 'bg-cyan-600 text-white shadow-lg shadow-cyan-900/30'
                                         : hasData
-                                            ? 'text-cyan-300 hover:text-white hover:bg-white/10 bg-cyan-900/20 border border-cyan-700/30'
+                                            ? 'bg-cyan-800/40 text-cyan-200 border border-cyan-500/40 hover:bg-cyan-700/50'
                                             : 'text-slate-500 hover:text-white hover:bg-white/10'
                                 }`}
                             >
                                 {year}
-                                {hasData && !isSelected && (
-                                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-cyan-400 rounded-full border-2 border-slate-900 animate-pulse" />
-                                )}
-                                {hasData && isSelected && (
-                                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-white rounded-full border-2 border-cyan-600" />
-                                )}
                             </button>
                         );
                     })}
