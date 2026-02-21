@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { useVacation } from '../../hooks/useVacation';
 import { useToast } from '../../components/Toast';
-import { Plane, Building, Map, Plus, Trash2, Calendar, Clock, Ticket, Pencil, Check, DollarSign, MapPin, Luggage, Loader2, Timer } from 'lucide-react';
+import { Plane, Building, Map, Plus, Trash2, Calendar, Clock, Ticket, Pencil, Check, DollarSign, MapPin, Luggage, Loader2, Timer, ChevronLeft, ChevronRight } from 'lucide-react';
 import { VacationFlight, VacationHotel, VacationTour, TourType, VacationTrip, UserRole, FlightTripType } from '../../types';
 
 interface VacationDashboardProps {
@@ -33,7 +33,21 @@ export const VacationDashboard: React.FC<VacationDashboardProps> = ({ role }) =>
   const [submitting, setSubmitting] = useState(false);
   
   // Year Filter State (Global)
-  const [selectedYear, setSelectedYear] = useState(2026);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+
+  // Compute years that have trips
+  const yearsWithTrips = useMemo(() => {
+    const years = new Set(trips.map(t => t.year));
+    return years;
+  }, [trips]);
+
+  // Generate a range of years to show (centered on selectedYear, plus all years with data)
+  const visibleYears = useMemo(() => {
+    const range = new Set<number>();
+    for (let i = selectedYear - 2; i <= selectedYear + 2; i++) range.add(i);
+    yearsWithTrips.forEach(y => range.add(y));
+    return Array.from(range).sort((a, b) => a - b);
+  }, [selectedYear, yearsWithTrips]);
 
   // Forms
   const [tripForm, setTripForm] = useState<Partial<VacationTrip>>({});
@@ -272,20 +286,37 @@ export const VacationDashboard: React.FC<VacationDashboardProps> = ({ role }) =>
           </div>
           
           <div className="flex gap-4 items-center">
-             <div className="flex items-center gap-2 bg-white/5 border border-white/10 px-3 py-2 rounded-lg">
-                <span className="text-sm text-slate-400">Ano:</span>
-                <select 
-                    value={selectedYear} 
-                    onChange={(e) => {
-                        setSelectedYear(Number(e.target.value));
-                        setSelectedTripId(null); // Reset trip on year change
-                    }}
-                    className="bg-transparent text-white font-bold outline-none cursor-pointer"
+          <div className="flex items-center gap-1 bg-white/5 border border-white/10 px-2 py-1.5 rounded-xl">
+                <button
+                    onClick={() => { setSelectedYear(prev => prev - 1); setSelectedTripId(null); }}
+                    className="p-1.5 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors"
                 >
-                    {Array.from({length: 5}, (_, i) => 2026 + i).map(year => (
-                        <option key={year} value={year} className="bg-slate-800">{year}</option>
+                    <ChevronLeft className="w-4 h-4" />
+                </button>
+                <div className="flex gap-1 overflow-x-auto custom-scrollbar px-1">
+                    {visibleYears.map(year => (
+                        <button
+                            key={year}
+                            onClick={() => { setSelectedYear(year); setSelectedTripId(null); }}
+                            className={`relative px-3 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+                                year === selectedYear
+                                    ? 'bg-cyan-600 text-white shadow-lg shadow-cyan-900/30'
+                                    : 'text-slate-400 hover:text-white hover:bg-white/10'
+                            }`}
+                        >
+                            {year}
+                            {yearsWithTrips.has(year) && year !== selectedYear && (
+                                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-cyan-400 rounded-full" />
+                            )}
+                        </button>
                     ))}
-                </select>
+                </div>
+                <button
+                    onClick={() => { setSelectedYear(prev => prev + 1); setSelectedTripId(null); }}
+                    className="p-1.5 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors"
+                >
+                    <ChevronRight className="w-4 h-4" />
+                </button>
              </div>
           </div>
         </header>
