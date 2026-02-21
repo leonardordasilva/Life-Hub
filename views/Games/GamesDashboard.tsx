@@ -352,11 +352,13 @@ export const GamesDashboard: React.FC<GamesDashboardProps> = ({ role }) => {
                                 <div><label className="label-std">Capa (URL)</label><input className="input-std" value={posterUrl} onChange={e => setPosterUrl(e.target.value)} /></div>
                                 <div><label className="label-std">Sinopse</label><textarea rows={3} className="input-std resize-none" value={synopsis} onChange={e => setSynopsis(e.target.value)} /></div>
 
-                                {/* RATING INPUT */}
-                                <div>
-                                    <label className="label-std">Nota (0-10)</label>
-                                    <input type="number" step="0.1" min="0" max="10" className="input-std" value={rating} onChange={e => setRating(Number(e.target.value))} placeholder="Ex: 9.0" />
-                                </div>
+                                {/* RATING - Display only (obtained from API sync) */}
+                                {rating > 0 && (
+                                    <div className="flex items-center gap-2 px-3 py-2 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                                        <Star className="w-4 h-4 text-amber-400 fill-current" />
+                                        <span className="text-sm text-amber-300 font-medium">Nota: {rating.toFixed(1)}</span>
+                                    </div>
+                                )}
 
                                 <div><label className="label-std">Plataforma</label><input className="input-std" value={platform} onChange={e => setPlatform(e.target.value)} /></div>
                                 <div><label className="label-std">Status</label><select className="input-std" value={status} onChange={e => setStatus(e.target.value as MediaStatus)}><option value="PENDING">Backlog</option><option value="WATCHING">Jogando</option><option value="COMPLETED">Zerado</option><option value="CASUAL">Casual</option></select></div>
