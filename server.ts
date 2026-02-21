@@ -3,7 +3,6 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
 import { fileURLToPath } from "url";
-import crypto from "crypto";
 import rateLimit from "express-rate-limit";
 import { GoogleGenAI, Type } from "@google/genai";
 import { createClient } from "@supabase/supabase-js";
@@ -14,16 +13,7 @@ const __dirname = path.dirname(__filename);
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 const RAWG_API_KEY = process.env.RAWG_API_KEY;
 const GEMINI_API_KEY = process.env.API_KEY || process.env.GEMINI_API_KEY;
-const SUPABASE_URL = process.env.SUPABASE_URL || '';
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || '';
 
-const serverSupabase = (SUPABASE_URL && SUPABASE_URL.startsWith('http') && SUPABASE_ANON_KEY)
-  ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-  : null;
-
-function hashPassword(password: string): string {
-  return crypto.createHash('sha256').update(password).digest('hex');
-}
 
 const FETCH_TIMEOUT = 10000;
 
@@ -76,13 +66,6 @@ async function startServer() {
 
   app.use(express.json());
 
-  const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 10,
-    message: { error: "Too many login attempts, please try again later" },
-    standardHeaders: true,
-    legacyHeaders: false,
-  });
 
   const apiLimiter = rateLimit({
     windowMs: 1 * 60 * 1000,
@@ -92,7 +75,6 @@ async function startServer() {
     legacyHeaders: false,
   });
 
-  app.use("/api/auth", authLimiter);
   app.use("/api/", apiLimiter);
 
   // TMDB Proxy
@@ -210,75 +192,6 @@ async function startServer() {
     } catch (error) {
       console.error("OpenLibrary Proxy Error:", error);
       res.status(500).json({ error: "Failed to fetch from OpenLibrary" });
-    }
-  });
-
-  // Authentication Routes
-  app.post("/api/auth/verify", async (req, res) => {
-    if (!serverSupabase) {
-      return res.status(500).json({ success: false, error: "Database not configured" });
-    }
-    const { password } = req.body;
-    if (!password || typeof password !== 'string') {
-      return res.status(400).json({ success: false, error: "Password required" });
-    }
-    try {
-      const inputHash = hashPassword(password);
-      const [pwdResult, defaultResult] = await Promise.all([
-        serverSupabase.from('app_config').select('value').eq('key', 'admin_password_hash').single(),
-        serverSupabase.from('app_config').select('value').eq('key', 'is_default_password').single(),
-      ]);
-
-      if (pwdResult.error || !pwdResult.data) {
-        return res.json({ success: false, resetRequired: false });
-      }
-
-      const storedHash = pwdResult.data.value;
-      const isDefault = defaultResult.data ? defaultResult.data.value === 'true' : false;
-
-      if (inputHash === storedHash) {
-        return res.json({ success: true, resetRequired: isDefault });
-      }
-      return res.json({ success: false, resetRequired: false });
-    } catch (e) {
-      console.error("Auth Error:", e);
-      return res.status(500).json({ success: false, error: "Internal error" });
-    }
-  });
-
-  app.post("/api/auth/change-password", async (req, res) => {
-    if (!serverSupabase) {
-      return res.status(500).json({ success: false, error: "Database not configured" });
-    }
-    const { currentPassword, newPassword } = req.body;
-    if (!newPassword || typeof newPassword !== 'string' || newPassword.length < 4) {
-      return res.status(400).json({ success: false, error: "Invalid new password" });
-    }
-
-    try {
-      if (currentPassword) {
-        const currentHash = hashPassword(currentPassword);
-        const { data } = await serverSupabase.from('app_config').select('value').eq('key', 'admin_password_hash').single();
-        if (!data || data.value !== currentHash) {
-          return res.json({ success: false, error: "Current password incorrect" });
-        }
-      }
-
-      const newHash = hashPassword(newPassword);
-      const { error: pwdError } = await serverSupabase
-        .from('app_config')
-        .upsert({ key: 'admin_password_hash', value: newHash });
-      if (pwdError) throw pwdError;
-
-      const { error: defError } = await serverSupabase
-        .from('app_config')
-        .upsert({ key: 'is_default_password', value: 'false' });
-      if (defError) throw defError;
-
-      return res.json({ success: true });
-    } catch (e) {
-      console.error("Change Password Error:", e);
-      return res.status(500).json({ success: false, error: "Internal error" });
     }
   });
 

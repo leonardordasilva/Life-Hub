@@ -10,19 +10,9 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({ error, onRetry }) => {
   const [copied, setCopied] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
 
-  const sqlCode = `-- Copie e cole este código no SQL Editor do Supabase
+  const sqlCode = `-- Script de Criação das Tabelas
 
--- 1. CONFIGURAÇÃO E AUTENTICAÇÃO
-create table if not exists app_config (
-  key text primary key,
-  value text not null
-);
-
--- Senha padrão 'admin'
-insert into app_config (key, value) values ('admin_password_hash', '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918') on conflict do nothing;
-insert into app_config (key, value) values ('is_default_password', 'true') on conflict do nothing;
-
--- 2. FINANCEIRO
+-- 1. FINANCEIRO
 create table if not exists finance_categories (
   id uuid default uuid_generate_v4() primary key,
   created_at timestamp with time zone default now(),
@@ -186,9 +176,6 @@ create table if not exists vacation_tours (
 );
 
 -- POLÍTICAS DE SEGURANÇA (Row Level Security)
-alter table app_config enable row level security;
-create policy "Public Access Config" on app_config for all using (true);
-
 alter table finance_categories enable row level security;
 create policy "Public Access FinCat" on finance_categories for all using (true);
 
