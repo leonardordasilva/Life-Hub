@@ -29,6 +29,7 @@
   "exclude": [
     "supabase",
     "dist",
-    "node_modules"
+    "node_modules",
+    "server.ts"
   ]
 }

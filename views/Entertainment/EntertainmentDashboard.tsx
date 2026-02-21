@@ -58,9 +58,9 @@ const PosterCard: React.FC<PosterCardProps> = ({
                             Vendo Agora
                         </div>
                     ) : (<span></span>)}
-                    {item.rating > 0 ? (
+                    {(item.rating ?? 0) > 0 ? (
                         <div className="px-2 py-1 bg-amber-500/90 text-white text-xs font-bold rounded-lg shadow-lg flex items-center gap-1">
-                            <Star className="w-3 h-3 fill-current" /> {item.rating.toFixed(1)}
+                            <Star className="w-3 h-3 fill-current" /> {(item.rating ?? 0).toFixed(1)}
                         </div>
                     ) : null}
                 </div>
@@ -824,8 +824,8 @@ export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = ({ 
                                                 <div className="flex-1 text-center md:text-left relative z-10">
                                                     <div className="flex items-center gap-2 mb-1 justify-center md:justify-start">
                                                         <h3 className="text-lg font-bold text-white">{item.title}</h3>
-                                                        {item.rating > 0 && (
-                                                            <span className="flex items-center text-amber-400 text-xs font-bold bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20"><Star className="w-3 h-3 fill-current mr-1" />{item.rating.toFixed(1)}</span>
+                                                        {(item.rating ?? 0) > 0 && (
+                                                            <span className="flex items-center text-amber-400 text-xs font-bold bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20"><Star className="w-3 h-3 fill-current mr-1" />{(item.rating ?? 0).toFixed(1)}</span>
                                                         )}
                                                     </div>
                                                     <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 text-sm text-slate-400 mt-1"><span className="flex items-center justify-center md:justify-start gap-1"><User className="w-3 h-3" /> {item.author || 'Autor Desconhecido'}</span><span className="hidden md:inline">•</span><span className="flex items-center justify-center md:justify-start gap-1"><Calendar className="w-3 h-3" /> {formatDate(item.releaseDate)}</span></div>
@@ -927,9 +927,9 @@ export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = ({ 
                                 <div className="mb-6">
                                     <div className="flex items-center gap-3">
                                         <span className="px-3 py-1 bg-pink-600/20 text-pink-400 border border-pink-500/30 rounded-full text-xs font-bold uppercase tracking-widest">{selectedDetailItem.type}</span>
-                                        {selectedDetailItem.rating > 0 && (
+                                        {(selectedDetailItem.rating ?? 0) > 0 && (
                                             <span className="flex items-center gap-1 text-amber-400 font-bold bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 text-sm">
-                                                <Star className="w-3.5 h-3.5 fill-current" /> {selectedDetailItem.rating.toFixed(1)}
+                                                <Star className="w-3.5 h-3.5 fill-current" /> {(selectedDetailItem.rating ?? 0).toFixed(1)}
                                             </span>
                                         )}
                                     </div>
