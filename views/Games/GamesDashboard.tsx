@@ -534,6 +534,8 @@ export const GamesDashboard: React.FC<GamesDashboardProps> = () => {
                             genres: row.genres,
                         });
                         onProgress({ current: i + 1, total: rows.length, percent: Math.round(((i + 1) / rows.length) * 100) });
+                        // Yield to main thread so React can repaint the progress bar
+                        await new Promise(r => setTimeout(r, 0));
                     }
                     await fetchGames();
                     showToast(`${rows.length} jogos importados com sucesso!`, 'success');
