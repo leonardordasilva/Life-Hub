@@ -5,7 +5,9 @@ import { MediaStatus, EntertainmentItem } from '../../types';
 import { searchGame, searchGamesMany, getGameDetails, RawgResult } from '../../services/rawgService';
 import { translateToPortuguese } from '../../services/geminiService';
 import { useToast } from '../../components/Toast';
-import { Gamepad2, Plus, Trash2, Search, X, Pencil, PlayCircle, CheckCircle, Clock, Loader2, Trophy, Coffee, Image as ImageIcon, Check, Calendar, Layers, RefreshCw, Star, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Gamepad2, Plus, Trash2, Search, X, Pencil, PlayCircle, CheckCircle, Clock, Loader2, Trophy, Coffee, Image as ImageIcon, Check, Calendar, Layers, RefreshCw, Star, ArrowRight, ChevronLeft, ChevronRight, Upload } from 'lucide-react';
+import { ImportModal } from '../../components/ImportModal';
+import { ImportedRow } from '../../services/fileImportService';
 
 const GAMES_PER_PAGE = 8;
 interface PosterCardProps {
@@ -96,6 +98,7 @@ export const GamesDashboard: React.FC<GamesDashboardProps> = () => {
     const [synopsis, setSynopsis] = useState('');
     const [genres, setGenres] = useState<string[]>([]);
     const [rawgLoading, setRawgLoading] = useState(false);
+    const [showImportModal, setShowImportModal] = useState(false);
 
     // Stats
     const stats = useMemo(() => ({
@@ -250,7 +253,12 @@ export const GamesDashboard: React.FC<GamesDashboardProps> = () => {
                             <input type="text" placeholder="Buscar jogo..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="relative w-full pl-10 pr-10 py-2.5 bg-slate-800/90 backdrop-blur-sm border border-white/10 rounded-xl text-sm text-white focus:border-violet-500/50 focus:ring-2 focus:ring-violet-500/20 outline-none transition-all placeholder:text-slate-500" />
                             {searchQuery && <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-violet-400 transition-colors z-10"><X className="w-4 h-4" /></button>}
                         </div>
-                        {isAdmin && <button onClick={openModal} className="btn btn-md btn-violet whitespace-nowrap"><Plus className="w-4 h-4" /> Adicionar</button>}
+                        {isAdmin && (
+                            <>
+                                <button onClick={() => setShowImportModal(true)} className="btn btn-md whitespace-nowrap bg-slate-700 hover:bg-slate-600 text-white"><Upload className="w-4 h-4" /> Importar</button>
+                                <button onClick={openModal} className="btn btn-md btn-violet whitespace-nowrap"><Plus className="w-4 h-4" /> Adicionar</button>
+                            </>
+                        )}
                     </div>
                 </header>
 
@@ -505,6 +513,26 @@ export const GamesDashboard: React.FC<GamesDashboardProps> = () => {
                 )}
 
             </div>
+
+            <ImportModal
+                isOpen={showImportModal}
+                onClose={() => setShowImportModal(false)}
+                title="Importar Jogos"
+                typeLabel="jogos"
+                onImport={async (rows: ImportedRow[]) => {
+                    for (const row of rows) {
+                        await addGame({
+                            title: row.title,
+                            status: (row.status as MediaStatus) || 'PENDING',
+                            rating: row.rating,
+                            platform: row.platform,
+                            synopsis: row.synopsis,
+                            genres: row.genres,
+                        });
+                    }
+                    showToast(`${rows.length} jogos importados com sucesso!`, 'success');
+                }}
+            />
             <style>{`.input-std{width:100%;background:#1e293b;border:1px solid #334155;border-radius:0.5rem;padding:0.5rem 0.75rem;color:white;outline:none;font-size:0.875rem}.input-std:focus{border-color:#8b5cf6;ring:1px solid #8b5cf6}.label-std{display:block;font-size:0.75rem;color:#94a3b8;margin-bottom:0.25rem;font-weight:500}`}</style>
         </div>
     );
