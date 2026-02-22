@@ -104,7 +104,7 @@ interface EntertainmentDashboardProps {
 }
 
 export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = () => {
-    const { items, loading, addItem, editItem, syncItem, removeItem, updateStatus, checkMetadataSync, applyBatchUpdates, incrementProgress, clearAll, clearAllEntertainment } = useEntertainment();
+    const { items, loading, addItem, addItemSilent, fetchItems, editItem, syncItem, removeItem, updateStatus, checkMetadataSync, applyBatchUpdates, incrementProgress, clearAll, clearAllEntertainment } = useEntertainment();
     const { showToast } = useToast();
     const isAdmin = true; // All users can manage their own data (RLS handles isolation)
 
@@ -1149,7 +1149,7 @@ export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = () 
                     const mediaType = typeMap[activeTab];
                     for (let i = 0; i < rows.length; i++) {
                         const row = rows[i];
-                        await addItem({
+                        await addItemSilent({
                             title: row.title,
                             type: mediaType,
                             status: (row.status as MediaStatus) || 'PENDING',
@@ -1161,8 +1161,8 @@ export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = () 
                             platform: row.platform,
                         });
                         onProgress({ current: i + 1, total: rows.length, percent: Math.round(((i + 1) / rows.length) * 100) });
-                        await new Promise(r => setTimeout(r, 30));
                     }
+                    await fetchItems();
                     showToast(`${rows.length} itens importados com sucesso!`, 'success');
                 }}
             />

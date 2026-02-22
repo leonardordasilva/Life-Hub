@@ -252,5 +252,15 @@ export const useGames = () => {
     else fetchGames();
   };
 
-  return { games, loading, addGame, editGame, syncGame, checkMetadataSync, applyBatchUpdates, removeGame, updateGameStatus, clearAllGames };
+  const addGameSilent = async (gameData: Partial<EntertainmentItem>) => {
+    const finishedAt = gameData.status === 'COMPLETED' ? new Date().toISOString() : undefined;
+    const { error } = await supabase.from('ent_games').insert({
+      title: gameData.title, platform: gameData.platform, status: gameData.status,
+      rating: gameData.rating || 0, poster_url: gameData.posterUrl, synopsis: gameData.synopsis,
+      genres: gameData.genres, external_id: gameData.externalId, finished_at: finishedAt
+    });
+    if (error) console.error('Error adding game (silent):', error);
+  };
+
+  return { games, loading, addGame, addGameSilent, fetchGames, editGame, syncGame, checkMetadataSync, applyBatchUpdates, removeGame, updateGameStatus, clearAllGames };
 };

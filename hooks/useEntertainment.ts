@@ -541,5 +541,32 @@ export const useEntertainment = () => {
         fetchItems();
     };
 
-    return { items, loading, addItem, editItem, syncItem, updateStatus, incrementProgress, removeItem, checkMetadataSync, applyBatchUpdates, clearAll, clearAllEntertainment };
+    const addItemSilent = async (itemData: Partial<EntertainmentItem>) => {
+        if (!itemData.type) return;
+        const table = getTable(itemData.type);
+        const baseData = {
+            title: itemData.title,
+            status: itemData.status || 'PENDING',
+            rating: formatRating(itemData.rating),
+            poster_url: itemData.posterUrl,
+            synopsis: itemData.synopsis,
+            genres: itemData.genres,
+            external_id: itemData.externalId || null,
+            finished_at: itemData.status === 'COMPLETED' ? new Date().toISOString() : null
+        };
+        let specificData: any = {};
+        if (itemData.type === 'SERIES') {
+            specificData = { total_seasons: itemData.totalSeasons || 0, watched_seasons: itemData.watchedSeasons || 0, current_season: itemData.currentSeason || 0, current_season_episodes: itemData.currentSeasonTotalEpisodes || 0, current_season_watched: itemData.currentSeasonWatchedEpisodes || 0, platform: itemData.platform };
+        } else if (itemData.type === 'MOVIE') {
+            specificData = { release_date: itemData.releaseDate || null };
+        } else if (itemData.type === 'ANIME') {
+            specificData = { total_episodes: itemData.totalEpisodes || 0, watched_episodes: itemData.watchedEpisodes || 0 };
+        } else if (itemData.type === 'BOOK') {
+            specificData = { author: itemData.author, isbn: itemData.isbn, release_date: itemData.releaseDate || null };
+        }
+        const { error } = await supabase.from(table).insert({ ...baseData, ...specificData });
+        if (error) console.error('Error adding item (silent):', error);
+    };
+
+    return { items, loading, addItem, addItemSilent, fetchItems, editItem, syncItem, updateStatus, incrementProgress, removeItem, checkMetadataSync, applyBatchUpdates, clearAll, clearAllEntertainment };
 };

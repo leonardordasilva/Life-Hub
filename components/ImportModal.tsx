@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
+import { flushSync } from 'react-dom';
 import { X, Upload, FileSpreadsheet, AlertTriangle, CheckCircle, ChevronLeft, ChevronRight, Loader2, FileText } from 'lucide-react';
 import { parseImportFile, validateFileExtension, ImportedRow, ImportResult } from '../services/fileImportService';
 
@@ -95,7 +96,9 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
     setImportProgress({ current: 0, total: toImport.length, percent: 0 });
     try {
       await onImport(toImport, (progress) => {
-        setImportProgress(progress);
+        flushSync(() => {
+          setImportProgress(progress);
+        });
       });
       setImportedCount(toImport.length);
       setStage('DONE');
