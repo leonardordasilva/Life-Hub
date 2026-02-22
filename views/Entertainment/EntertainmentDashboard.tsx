@@ -8,6 +8,7 @@ import { useToast } from '../../components/Toast';
 import { Film, Tv, Book, Plus, Trash2, Calendar, User, List, CheckCircle, Clock, PlayCircle, Pencil, Check, Filter, Zap, PauseCircle, ChevronLeft, ChevronRight, Search, X, Loader2, Image as ImageIcon, BarChart2, Layers, RefreshCw, AlertTriangle, ArrowRight, Bookmark, Star, Upload } from 'lucide-react';
 import { ImportModal } from '../../components/ImportModal';
 import { ImportedRow } from '../../services/fileImportService';
+import { ClearAllModal } from '../../components/ClearAllModal';
 
 const ITEMS_PER_PAGE = 6;
 
@@ -103,7 +104,7 @@ interface EntertainmentDashboardProps {
 }
 
 export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = () => {
-    const { items, loading, addItem, editItem, syncItem, removeItem, updateStatus, checkMetadataSync, applyBatchUpdates, incrementProgress } = useEntertainment();
+    const { items, loading, addItem, editItem, syncItem, removeItem, updateStatus, checkMetadataSync, applyBatchUpdates, incrementProgress, clearAll, clearAllEntertainment } = useEntertainment();
     const { showToast } = useToast();
     const isAdmin = true; // All users can manage their own data (RLS handles isolation)
 
@@ -160,6 +161,7 @@ export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = () 
     const [tmdbLoading, setTmdbLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [showImportModal, setShowImportModal] = useState(false);
+    const [showClearModal, setShowClearModal] = useState(false);
 
     // Filtering Base Lists
     const series = items.filter(i => i.type === 'SERIES');
@@ -603,6 +605,7 @@ export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = () 
                         </div>
                         {isAdmin && (
                             <>
+                                <button onClick={() => setShowClearModal(true)} className="btn btn-md whitespace-nowrap bg-red-900/30 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/20 hover:border-red-400 transition-all"><Trash2 className="w-4 h-4" /> Limpar</button>
                                 <button onClick={() => setShowImportModal(true)} className="btn btn-md whitespace-nowrap bg-slate-700 hover:bg-slate-600 text-white"><Upload className="w-4 h-4" /> Importar</button>
                                 <button onClick={openModal} className="btn btn-md btn-pink whitespace-nowrap"><Plus className="w-4 h-4" /> Adicionar</button>
                             </>
@@ -1158,6 +1161,17 @@ export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = () 
                         });
                     }
                     showToast(`${rows.length} itens importados com sucesso!`, 'success');
+                }}
+            />
+            <ClearAllModal
+                isOpen={showClearModal}
+                onClose={() => setShowClearModal(false)}
+                title="Limpar Entretenimento"
+                description="Isso irá remover TODOS os dados de séries, filmes, animes e livros. Esta ação não pode ser desfeita."
+                itemCount={items.length}
+                onConfirm={async () => {
+                    await clearAllEntertainment();
+                    showToast('Todos os dados de entretenimento foram removidos.', 'success');
                 }}
             />
             <style>{`

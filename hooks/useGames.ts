@@ -246,5 +246,11 @@ export const useGames = () => {
     }
   };
 
-  return { games, loading, addGame, editGame, syncGame, checkMetadataSync, applyBatchUpdates, removeGame, updateGameStatus };
+  const clearAllGames = async () => {
+    const { error } = await supabase.from('ent_games').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    if (error) console.error('Error clearing games:', error);
+    else fetchGames();
+  };
+
+  return { games, loading, addGame, editGame, syncGame, checkMetadataSync, applyBatchUpdates, removeGame, updateGameStatus, clearAllGames };
 };
