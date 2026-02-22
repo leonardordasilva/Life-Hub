@@ -1144,10 +1144,11 @@ export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = () 
                 onClose={() => setShowImportModal(false)}
                 title={`Importar ${activeTab === 'SERIES' ? 'Séries' : activeTab === 'MOVIES' ? 'Filmes' : activeTab === 'ANIME' ? 'Animes' : 'Livros'}`}
                 typeLabel={activeTab === 'SERIES' ? 'séries' : activeTab === 'MOVIES' ? 'filmes' : activeTab === 'ANIME' ? 'animes' : 'livros'}
-                onImport={async (rows: ImportedRow[]) => {
+                onImport={async (rows, onProgress) => {
                     const typeMap: Record<string, MediaType> = { SERIES: 'SERIES', MOVIES: 'MOVIE', ANIME: 'ANIME', BOOKS: 'BOOK' };
                     const mediaType = typeMap[activeTab];
-                    for (const row of rows) {
+                    for (let i = 0; i < rows.length; i++) {
+                        const row = rows[i];
                         await addItem({
                             title: row.title,
                             type: mediaType,
@@ -1159,6 +1160,8 @@ export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = () 
                             isbn: row.isbn,
                             platform: row.platform,
                         });
+                        onProgress({ current: i + 1, total: rows.length, percent: Math.round(((i + 1) / rows.length) * 100) });
+                        await new Promise(r => setTimeout(r, 30));
                     }
                     showToast(`${rows.length} itens importados com sucesso!`, 'success');
                 }}

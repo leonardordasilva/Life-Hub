@@ -2,10 +2,16 @@ import React, { useState, useRef, useCallback } from 'react';
 import { X, Upload, FileSpreadsheet, AlertTriangle, CheckCircle, ChevronLeft, ChevronRight, Loader2, FileText } from 'lucide-react';
 import { parseImportFile, validateFileExtension, ImportedRow, ImportResult } from '../services/fileImportService';
 
+export interface ImportProgress {
+  current: number;
+  total: number;
+  percent: number;
+}
+
 interface ImportModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onImport: (rows: ImportedRow[]) => Promise<void>;
+  onImport: (rows: ImportedRow[], onProgress: (progress: ImportProgress) => void) => Promise<void>;
   title: string;
   typeLabel: string;
 }
@@ -20,6 +26,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
   const [previewPage, setPreviewPage] = useState(1);
   const [importErrors, setImportErrors] = useState<string[]>([]);
   const [importedCount, setImportedCount] = useState(0);
+  const [importProgress, setImportProgress] = useState<ImportProgress>({ current: 0, total: 0, percent: 0 });
   const [dragOver, setDragOver] = useState(false);
 
   const reset = () => {
@@ -29,6 +36,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
     setPreviewPage(1);
     setImportErrors([]);
     setImportedCount(0);
+    setImportProgress({ current: 0, total: 0, percent: 0 });
     if (fileRef.current) fileRef.current.value = '';
   };
 
@@ -84,12 +92,16 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
     if (toImport.length === 0) return;
 
     setStage('IMPORTING');
+    setImportProgress({ current: 0, total: toImport.length, percent: 0 });
     try {
-      await onImport(toImport);
+      await onImport(toImport, (progress) => {
+        setImportProgress(progress);
+      });
       setImportedCount(toImport.length);
       setStage('DONE');
     } catch (e: any) {
       setImportErrors([e.message || 'Erro ao importar']);
+      setImportedCount(importProgress.current);
       setStage('DONE');
     }
   };
@@ -245,10 +257,23 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
 
           {/* Stage: IMPORTING */}
           {stage === 'IMPORTING' && (
-            <div className="flex flex-col items-center justify-center py-16">
+            <div className="flex flex-col items-center justify-center py-12">
               <Loader2 className="w-10 h-10 text-emerald-400 animate-spin mb-4" />
-              <p className="text-white font-medium">Importando {selectedRows.size} itens...</p>
-              <p className="text-slate-400 text-sm mt-1">Aguarde enquanto os dados são salvos.</p>
+              <p className="text-white font-medium mb-1">
+                Importando {importProgress.current} de {importProgress.total} {typeLabel}
+              </p>
+              <p className="text-slate-400 text-sm mb-6">Aguarde enquanto os dados são salvos.</p>
+
+              {/* Progress Bar */}
+              <div className="w-full max-w-xs">
+                <div className="w-full bg-slate-700/50 rounded-full h-3 overflow-hidden border border-white/5">
+                  <div
+                    className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full transition-all duration-300 ease-out"
+                    style={{ width: `${Math.max(importProgress.percent, 2)}%` }}
+                  />
+                </div>
+                <p className="text-center text-xs text-emerald-400 font-bold mt-2">{importProgress.percent}%</p>
+              </div>
             </div>
           )}
 
