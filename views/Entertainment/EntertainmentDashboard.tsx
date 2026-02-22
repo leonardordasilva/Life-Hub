@@ -1166,12 +1166,13 @@ export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = () 
             <ClearAllModal
                 isOpen={showClearModal}
                 onClose={() => setShowClearModal(false)}
-                title="Limpar Entretenimento"
-                description="Isso irá remover TODOS os dados de séries, filmes, animes e livros. Esta ação não pode ser desfeita."
-                itemCount={items.length}
+                title={`Limpar ${activeTab === 'SERIES' ? 'Séries' : activeTab === 'MOVIES' ? 'Filmes' : activeTab === 'ANIME' ? 'Animes' : 'Livros'}`}
+                description={`Isso irá remover todos os dados de ${activeTab === 'SERIES' ? 'séries' : activeTab === 'MOVIES' ? 'filmes' : activeTab === 'ANIME' ? 'animes' : 'livros'}. Esta ação não pode ser desfeita.`}
+                itemCount={activeTab === 'SERIES' ? series.length : activeTab === 'MOVIES' ? movies.length : activeTab === 'ANIME' ? animes.length : books.length}
                 onConfirm={async () => {
-                    await clearAllEntertainment();
-                    showToast('Todos os dados de entretenimento foram removidos.', 'success');
+                    const typeMap: Record<string, MediaType> = { SERIES: 'SERIES', MOVIES: 'MOVIE', ANIME: 'ANIME', BOOKS: 'BOOK' };
+                    await clearAll(typeMap[activeTab]);
+                    showToast(`Todos os dados de ${activeTab === 'SERIES' ? 'séries' : activeTab === 'MOVIES' ? 'filmes' : activeTab === 'ANIME' ? 'animes' : 'livros'} foram removidos.`, 'success');
                 }}
             />
             <style>{`
