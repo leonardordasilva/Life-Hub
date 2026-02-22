@@ -321,7 +321,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
               <div className="w-full max-w-xs">
                 <div className="w-full bg-slate-700/50 rounded-full h-3 overflow-hidden border border-white/5">
                   <div
-                    className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full transition-all duration-300 ease-out"
+                    className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full transition-all"
                     style={{ width: `${Math.max(importProgress.percent, 2)}%` }}
                   />
                 </div>
