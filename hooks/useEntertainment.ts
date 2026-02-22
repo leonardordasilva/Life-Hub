@@ -541,8 +541,8 @@ export const useEntertainment = () => {
         fetchItems();
     };
 
-    const addItemSilent = async (itemData: Partial<EntertainmentItem>) => {
-        if (!itemData.type) return;
+    const addItemSilent = async (itemData: Partial<EntertainmentItem>): Promise<string | null> => {
+        if (!itemData.type) return null;
         const table = getTable(itemData.type);
         const baseData = {
             title: itemData.title,
@@ -564,9 +564,19 @@ export const useEntertainment = () => {
         } else if (itemData.type === 'BOOK') {
             specificData = { author: itemData.author, isbn: itemData.isbn, release_date: itemData.releaseDate || null };
         }
-        const { error } = await supabase.from(table).insert({ ...baseData, ...specificData });
-        if (error) console.error('Error adding item (silent):', error);
+        const { data, error } = await supabase.from(table).insert({ ...baseData, ...specificData }).select('id').single();
+        if (error) { console.error('Error adding item (silent):', error); return null; }
+        return data?.id || null;
     };
 
-    return { items, loading, addItem, addItemSilent, fetchItems, editItem, syncItem, updateStatus, incrementProgress, removeItem, checkMetadataSync, applyBatchUpdates, clearAll, clearAllEntertainment };
+    const deleteItemsByIds = async (ids: string[], type: MediaType) => {
+        const table = getTable(type);
+        if (ids.length > 0) {
+            const { error } = await supabase.from(table).delete().in('id', ids);
+            if (error) console.error('Error deleting items by ids:', error);
+            else await fetchItems();
+        }
+    };
+
+    return { items, loading, addItem, addItemSilent, fetchItems, editItem, syncItem, updateStatus, incrementProgress, removeItem, checkMetadataSync, applyBatchUpdates, clearAll, clearAllEntertainment, deleteItemsByIds };
 };

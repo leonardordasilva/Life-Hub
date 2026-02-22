@@ -104,7 +104,7 @@ interface EntertainmentDashboardProps {
 }
 
 export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = () => {
-    const { items, loading, addItem, addItemSilent, fetchItems, editItem, syncItem, removeItem, updateStatus, checkMetadataSync, applyBatchUpdates, incrementProgress, clearAll, clearAllEntertainment } = useEntertainment();
+    const { items, loading, addItem, addItemSilent, fetchItems, editItem, syncItem, removeItem, updateStatus, checkMetadataSync, applyBatchUpdates, incrementProgress, clearAll, clearAllEntertainment, deleteItemsByIds } = useEntertainment();
     const { showToast } = useToast();
     const isAdmin = true; // All users can manage their own data (RLS handles isolation)
 
@@ -1144,12 +1144,14 @@ export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = () 
                 onClose={() => setShowImportModal(false)}
                 title={`Importar ${activeTab === 'SERIES' ? 'Séries' : activeTab === 'MOVIES' ? 'Filmes' : activeTab === 'ANIME' ? 'Animes' : 'Livros'}`}
                 typeLabel={activeTab === 'SERIES' ? 'séries' : activeTab === 'MOVIES' ? 'filmes' : activeTab === 'ANIME' ? 'animes' : 'livros'}
-                onImport={async (rows, onProgress) => {
+                onImport={async (rows, onProgress, cancelRef) => {
                     const typeMap: Record<string, MediaType> = { SERIES: 'SERIES', MOVIES: 'MOVIE', ANIME: 'ANIME', BOOKS: 'BOOK' };
                     const mediaType = typeMap[activeTab];
+                    const importedIds: string[] = [];
                     for (let i = 0; i < rows.length; i++) {
+                        if (cancelRef.current) break;
                         const row = rows[i];
-                        await addItemSilent({
+                        const id = await addItemSilent({
                             title: row.title,
                             type: mediaType,
                             status: (row.status as MediaStatus) || 'PENDING',
@@ -1160,12 +1162,19 @@ export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = () 
                             isbn: row.isbn,
                             platform: row.platform,
                         });
+                        if (id) importedIds.push(id);
                         onProgress({ current: i + 1, total: rows.length, percent: Math.round(((i + 1) / rows.length) * 100) });
-                        // Yield to main thread so React can repaint the progress bar
                         await new Promise(r => setTimeout(r, 0));
                     }
-                    await fetchItems();
-                    showToast(`${rows.length} itens importados com sucesso!`, 'success');
+                    if (!cancelRef.current) {
+                        await fetchItems();
+                        showToast(`${rows.length} itens importados com sucesso!`, 'success');
+                    }
+                    return importedIds;
+                }}
+                onDiscardImported={async (ids) => {
+                    const typeMap: Record<string, MediaType> = { SERIES: 'SERIES', MOVIES: 'MOVIE', ANIME: 'ANIME', BOOKS: 'BOOK' };
+                    await deleteItemsByIds(ids, typeMap[activeTab]);
                 }}
             />
             <ClearAllModal

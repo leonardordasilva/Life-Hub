@@ -252,15 +252,24 @@ export const useGames = () => {
     else fetchGames();
   };
 
-  const addGameSilent = async (gameData: Partial<EntertainmentItem>) => {
+  const addGameSilent = async (gameData: Partial<EntertainmentItem>): Promise<string | null> => {
     const finishedAt = gameData.status === 'COMPLETED' ? new Date().toISOString() : undefined;
-    const { error } = await supabase.from('ent_games').insert({
+    const { data, error } = await supabase.from('ent_games').insert({
       title: gameData.title, platform: gameData.platform, status: gameData.status,
       rating: gameData.rating || 0, poster_url: gameData.posterUrl, synopsis: gameData.synopsis,
       genres: gameData.genres, external_id: gameData.externalId, finished_at: finishedAt
-    });
-    if (error) console.error('Error adding game (silent):', error);
+    }).select('id').single();
+    if (error) { console.error('Error adding game (silent):', error); return null; }
+    return data?.id || null;
   };
 
-  return { games, loading, addGame, addGameSilent, fetchGames, editGame, syncGame, checkMetadataSync, applyBatchUpdates, removeGame, updateGameStatus, clearAllGames };
+  const deleteGamesByIds = async (ids: string[]) => {
+    if (ids.length > 0) {
+      const { error } = await supabase.from('ent_games').delete().in('id', ids);
+      if (error) console.error('Error deleting games by ids:', error);
+      else await fetchGames();
+    }
+  };
+
+  return { games, loading, addGame, addGameSilent, fetchGames, editGame, syncGame, checkMetadataSync, applyBatchUpdates, removeGame, updateGameStatus, clearAllGames, deleteGamesByIds };
 };

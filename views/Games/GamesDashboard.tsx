@@ -68,7 +68,7 @@ const PosterCard: React.FC<PosterCardProps> = ({ item, children, actions, onClic
 interface GamesDashboardProps {}
 
 export const GamesDashboard: React.FC<GamesDashboardProps> = () => {
-    const { games, loading, addGame, addGameSilent, fetchGames, editGame, syncGame, checkMetadataSync, applyBatchUpdates, removeGame, updateGameStatus, clearAllGames } = useGames();
+    const { games, loading, addGame, addGameSilent, fetchGames, editGame, syncGame, checkMetadataSync, applyBatchUpdates, removeGame, updateGameStatus, clearAllGames, deleteGamesByIds } = useGames();
     const { showToast } = useToast();
     const isAdmin = true; // All users can manage their own data (RLS handles isolation)
 
@@ -522,10 +522,12 @@ export const GamesDashboard: React.FC<GamesDashboardProps> = () => {
                 onClose={() => setShowImportModal(false)}
                 title="Importar Jogos"
                 typeLabel="jogos"
-                onImport={async (rows, onProgress) => {
+                onImport={async (rows, onProgress, cancelRef) => {
+                    const importedIds: string[] = [];
                     for (let i = 0; i < rows.length; i++) {
+                        if (cancelRef.current) break;
                         const row = rows[i];
-                        await addGameSilent({
+                        const id = await addGameSilent({
                             title: row.title,
                             status: (row.status as MediaStatus) || 'PENDING',
                             rating: row.rating,
@@ -533,12 +535,18 @@ export const GamesDashboard: React.FC<GamesDashboardProps> = () => {
                             synopsis: row.synopsis,
                             genres: row.genres,
                         });
+                        if (id) importedIds.push(id);
                         onProgress({ current: i + 1, total: rows.length, percent: Math.round(((i + 1) / rows.length) * 100) });
-                        // Yield to main thread so React can repaint the progress bar
                         await new Promise(r => setTimeout(r, 0));
                     }
-                    await fetchGames();
-                    showToast(`${rows.length} jogos importados com sucesso!`, 'success');
+                    if (!cancelRef.current) {
+                        await fetchGames();
+                        showToast(`${rows.length} jogos importados com sucesso!`, 'success');
+                    }
+                    return importedIds;
+                }}
+                onDiscardImported={async (ids) => {
+                    await deleteGamesByIds(ids);
                 }}
             />
             <ClearAllModal
