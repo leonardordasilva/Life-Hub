@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useGames } from '../../hooks/useGames';
 import { GameSyncDiff } from '../../hooks/useGames';
-import { MediaStatus, EntertainmentItem, UserRole } from '../../types';
+import { MediaStatus, EntertainmentItem } from '../../types';
 import { searchGame, searchGamesMany, getGameDetails, RawgResult } from '../../services/rawgService';
 import { translateToPortuguese } from '../../services/geminiService';
 import { useToast } from '../../components/Toast';
@@ -21,7 +21,7 @@ const PosterCard: React.FC<PosterCardProps> = ({ item, children, actions, onClic
 
     return (
         <div
-            className={`relative group overflow-hidden rounded-2xl bg-slate-800/80 border transition-all duration-300 min-h-[340px] flex flex-col ${borderColor} ${onClick ? 'cursor-pointer' : ''}`}
+            className={`relative group overflow-hidden rounded-2xl bg-slate-800/80 border transition-all duration-300 min-h-[360px] flex flex-col ${borderColor} ${onClick ? 'cursor-pointer' : ''}`}
             onClick={(e) => {
                 if ((e.target as HTMLElement).closest('button')) return;
                 onClick?.();
@@ -33,14 +33,13 @@ const PosterCard: React.FC<PosterCardProps> = ({ item, children, actions, onClic
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/70 to-transparent" />
                 </div>
             ) : (
-                <div className="absolute inset-0 bg-gradient-to-br from-violet-900/20 to-slate-900 z-0" />
+                <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900 z-0" />
             )}
 
-            {/* Top Badges - Left side */}
             <div className="relative z-10 p-4 flex items-start gap-2">
                 {isPlaying && (
-                    <div className="px-2.5 py-1 bg-violet-600/90 text-white text-[10px] font-bold rounded-full shadow-lg flex items-center gap-1 uppercase tracking-wider backdrop-blur-sm">
-                        <Gamepad2 className="w-3 h-3" /> Jogando
+                    <div className="px-2.5 py-1 bg-violet-500/90 text-white text-[10px] font-bold rounded-full shadow-lg flex items-center gap-1 uppercase tracking-wider backdrop-blur-sm">
+                        <PlayCircle className="w-3 h-3" /> Jogando
                     </div>
                 )}
                 {(item.rating ?? 0) > 0 && (
@@ -50,14 +49,12 @@ const PosterCard: React.FC<PosterCardProps> = ({ item, children, actions, onClic
                 )}
             </div>
 
-            {/* Hover Action Overlay - Top right */}
             {actions && (
                 <div className="absolute top-3 right-3 z-30 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0">
                     {actions}
                 </div>
             )}
 
-            {/* Content pushed to bottom */}
             <div className="relative z-10 mt-auto p-5 pt-8 flex flex-col gap-3">
                 {children}
             </div>
@@ -65,14 +62,11 @@ const PosterCard: React.FC<PosterCardProps> = ({ item, children, actions, onClic
     );
 };
 
-interface GamesDashboardProps {
-    role: UserRole;
-}
+interface GamesDashboardProps {}
 
-export const GamesDashboard: React.FC<GamesDashboardProps> = ({ role }) => {
+export const GamesDashboard: React.FC<GamesDashboardProps> = () => {
     const { games, loading, addGame, editGame, syncGame, checkMetadataSync, applyBatchUpdates, removeGame, updateGameStatus } = useGames();
     const { showToast } = useToast();
-    const isAdmin = role === 'ADMIN';
 
     // State
     const [searchQuery, setSearchQuery] = useState('');

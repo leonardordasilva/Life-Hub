@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { AppSection, UserRole } from '../types';
+import { AppSection } from '../types';
+import { UserProfile } from '../hooks/useProfile';
 import { useFinanceData } from '../hooks/useFinanceData';
 import { useVacation } from '../hooks/useVacation';
 import { useEntertainment } from '../hooks/useEntertainment';
@@ -15,14 +16,17 @@ import {
 
 interface HomeProps {
     onNavigate: (section: AppSection) => void;
-    role: UserRole;
+    profile: UserProfile;
 }
 
-export const Home: React.FC<HomeProps> = ({ onNavigate, role }) => {
+export const Home: React.FC<HomeProps> = ({ onNavigate, profile }) => {
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear();
     const currentMonth = currentDate.getMonth();
-    const isAdmin = role === 'ADMIN';
+    const hasFinance = profile.module_finance;
+    const hasVacation = profile.module_vacation;
+    const hasEntertainment = profile.module_entertainment;
+    const hasGames = profile.module_games;
 
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
     const [currentGameIndex, setCurrentGameIndex] = useState(0);
@@ -42,15 +46,15 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, role }) => {
         return <Moon className="w-6 h-6 text-indigo-400" />;
     };
 
-    const { transactions, categories, getReserveForYear, loading: financeLoading } = useFinanceData(role);
-    const { trips, flights, hotels, tours, loading: vacationLoading } = useVacation(role);
+    const { transactions, categories, getReserveForYear, loading: financeLoading } = useFinanceData('ADMIN');
+    const { trips, flights, hotels, tours, loading: vacationLoading } = useVacation();
     const { items, loading: entertainmentLoading, updateStatus, incrementProgress } = useEntertainment();
     const { games, loading: gamesLoading, updateGameStatus } = useGames();
 
     const [destinationImage, setDestinationImage] = useState<string | null>(null);
 
     const financeSummary = useMemo(() => {
-        if (!isAdmin || financeLoading) return null;
+        if (!hasFinance || financeLoading) return null;
         const initialReserve = getReserveForYear(currentYear);
         const incomeCats = categories.filter(c => c.type === 'INCOME');
         const expenseCats = categories.filter(c => c.type === 'EXPENSE');
@@ -70,10 +74,10 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, role }) => {
         const expensePct = (currentExpense / maxVal) * 100;
         const savingsRate = currentIncome > 0 ? ((currentIncome - currentExpense) / currentIncome) * 100 : 0;
         return { initialReserve, projectedBalance, currentIncome, currentExpense, currentBalance, incomePct, expensePct, savingsRate };
-    }, [transactions, categories, currentYear, currentMonth, getReserveForYear, financeLoading, isAdmin]);
+    }, [transactions, categories, currentYear, currentMonth, getReserveForYear, financeLoading, hasFinance]);
 
     const vacationSummary = useMemo(() => {
-        if (!isAdmin || vacationLoading) return null;
+        if (!hasVacation || vacationLoading) return null;
         const trip = trips.find(t => t.year === currentYear);
         if (!trip) return null;
         let days = 0;
@@ -97,13 +101,13 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, role }) => {
         const tourCost = tours.filter(t => t.tripId === trip.id).reduce((sum, t) => sum + (t.price || 0), 0);
         const totalCost = flightCost + hotelCost + tourCost;
         return { trip, days, daysUntil, dateRange, totalCost };
-    }, [trips, flights, hotels, tours, currentYear, vacationLoading, isAdmin]);
+    }, [trips, flights, hotels, tours, currentYear, vacationLoading, hasVacation]);
 
     useEffect(() => {
-        if (isAdmin && vacationSummary?.trip?.destination && !vacationSummary.trip.coverUrl) {
+        if (hasVacation && vacationSummary?.trip?.destination && !vacationSummary.trip.coverUrl) {
             fetchDestinationImage(vacationSummary.trip.destination).then(url => { if (url) setDestinationImage(url); });
         }
-    }, [vacationSummary?.trip?.destination, vacationSummary?.trip?.coverUrl, isAdmin]);
+    }, [vacationSummary?.trip?.destination, vacationSummary?.trip?.coverUrl, hasVacation]);
 
     const { activeMediaList, activeGamesList } = useMemo(() => {
         if (entertainmentLoading || gamesLoading) return { activeMediaList: [], activeGamesList: [] };
@@ -152,14 +156,14 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, role }) => {
                 <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-fuchsia-900/10 rounded-full blur-[128px]" />
             </div>
 
-            <header className={`${isAdmin ? 'mb-8' : 'mb-12'} flex flex-col md:flex-row justify-between md:items-end gap-4 animate-in fade-in slide-in-from-top-4 duration-700`}>
+            <header className="mb-8 flex flex-col md:flex-row justify-between md:items-end gap-4 animate-in fade-in slide-in-from-top-4 duration-700">
                 <div>
                     <div className="flex items-center gap-3 text-slate-400 mb-4">
                         {getGreetingIcon()}
                         <span className="text-sm font-medium uppercase tracking-wider">{greeting}</span>
                     </div>
-                    <h1 className={`font-bold text-white tracking-tight ${isAdmin ? 'text-3xl md:text-4xl' : 'text-2xl md:text-3xl'}`}>
-                        {isAdmin ? 'Dashboard Administrativo' : 'Catálogo de Filmes, Séries, Animes, Livros e Games'}
+                    <h1 className="font-bold text-white tracking-tight text-3xl md:text-4xl">
+                        {greeting}, {profile.display_name || 'Usuário'}
                     </h1>
                 </div>
                 <div className="text-right hidden md:block">
@@ -168,10 +172,10 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, role }) => {
                 </div>
             </header>
 
-            <div className={`${!isAdmin ? 'flex-1 flex items-center justify-center w-full' : ''}`}>
-                <div className={`grid grid-cols-1 ${isAdmin ? 'md:grid-cols-2 lg:grid-cols-4 max-w-[1600px]' : 'lg:grid-cols-2 max-w-[1400px]'} gap-6 w-full mx-auto`}>
+            <div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 max-w-[1600px] gap-6 w-full mx-auto">
 
-                    {isAdmin && (
+                    {hasFinance && (
                         <>
                             <div className="lg:col-span-2 bg-slate-900/40 border border-white/10 rounded-3xl p-6 backdrop-blur-md relative overflow-hidden flex flex-col justify-between group hover:border-white/20 transition-all duration-300">
                                 <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity"><Wallet className="w-32 h-32 text-emerald-500" /></div>
@@ -228,12 +232,12 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, role }) => {
                         </>
                     )}
 
-                    <div className={`${isAdmin ? 'lg:col-span-2' : 'lg:col-span-1'} bg-slate-900/40 border border-white/10 rounded-3xl p-0 backdrop-blur-md relative overflow-hidden group ${isAdmin ? 'min-h-[220px]' : 'min-h-[450px]'} hover:border-pink-500/30 transition-all duration-300`}>
+                    {hasEntertainment && (
+                    <div className="lg:col-span-2 bg-slate-900/40 border border-white/10 rounded-3xl p-0 backdrop-blur-md relative overflow-hidden group min-h-[220px] hover:border-pink-500/30 transition-all duration-300">
                         {currentMedia?.posterUrl ? (
                             <div className="absolute inset-0 z-0">
                                 <img src={currentMedia.posterUrl} alt="media" className="w-full h-full object-cover opacity-60 transition-transform duration-700 group-hover:scale-105 group-hover:opacity-50" />
                                 <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-transparent" />
-                                {!isAdmin && <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent" />}
                             </div>
                         ) : (<div className="absolute inset-0 bg-slate-800 z-0" />)}
 
@@ -244,46 +248,42 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, role }) => {
                             </div>
                         )}
 
-                        <div className={`relative z-10 p-8 md:p-12 h-full flex flex-col ${isAdmin ? 'justify-center' : 'justify-end'} max-w-2xl`}>
+                        <div className="relative z-10 p-8 md:p-12 h-full flex flex-col justify-center max-w-2xl">
                             {currentMedia ? (
                                 <>
                                     <div className={`flex items-center gap-2 w-fit px-3 py-1.5 rounded-lg mb-4 backdrop-blur-sm ${entMeta.bg} ${entMeta.color} border border-white/5`}>
                                         {React.cloneElement(entMeta.icon as React.ReactElement<any>, { className: "w-4 h-4" })}
                                         <span className="text-xs font-bold uppercase tracking-widest">{entMeta.label}</span>
                                     </div>
-                                    <h3 className={`${isAdmin ? 'text-3xl' : 'text-5xl'} font-bold text-white mb-3 leading-tight drop-shadow-2xl line-clamp-2`}>{currentMedia.title}</h3>
+                                    <h3 className="text-3xl font-bold text-white mb-3 leading-tight drop-shadow-2xl line-clamp-2">{currentMedia.title}</h3>
                                     <div className="flex flex-wrap gap-3 text-sm text-slate-300 font-medium mb-8">
                                         {(currentMedia.type === 'SERIES' || currentMedia.type === 'ANIME') && (<span className="bg-black/60 px-4 py-1.5 rounded-full border border-white/10 backdrop-blur-sm">{currentMedia.type === 'SERIES' ? `Temporada ${currentMedia.currentSeason || 1} • Ep ${(currentMedia.currentSeasonWatchedEpisodes || 0) + 1}` : `Episódio ${(currentMedia.watchedEpisodes || 0) + 1}`}</span>)}
                                         {(currentMedia.type === 'MOVIE' || currentMedia.type === 'BOOK') && (<span className="bg-black/60 px-4 py-1.5 rounded-full border border-white/10 backdrop-blur-sm">{currentMedia.status === 'WATCHING' ? 'Em andamento' : 'Na Fila de Espera'}</span>)}
                                     </div>
-                                    {isAdmin ? (
+                                    <div className="flex gap-3">
                                         <div className="flex gap-3">
-                                            {(currentMedia.type === 'SERIES' || currentMedia.type === 'ANIME') ? (
-                                                <button onClick={(e) => { e.stopPropagation(); incrementProgress(currentMedia); }} className="px-6 py-3 bg-pink-600 hover:bg-pink-700 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-pink-900/40 flex items-center gap-2 active:scale-95">
-                                                    <PlayCircle className="w-4 h-4" /> Visto
-                                                </button>
-                                            ) : (
-                                                <button onClick={(e) => { e.stopPropagation(); updateStatus(currentMedia.id, 'COMPLETED'); }} className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-bold text-sm transition-all flex items-center gap-2 border border-white/20 active:scale-95">
-                                                    <Check className="w-4 h-4" /> {currentMedia.type === 'BOOK' ? 'Lido' : 'Visto'}
-                                                </button>
-                                            )}
-                                        </div>
-                                    ) : (
-                                        <button onClick={() => onNavigate(AppSection.ENTERTAINMENT)} className="group/btn flex items-center gap-3 text-white bg-pink-600/80 hover:bg-pink-600 px-6 py-3 rounded-xl font-bold text-sm transition-all w-fit shadow-lg shadow-pink-900/20">
-                                            Explorar Biblioteca <ArrowRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
-                                        </button>
-                                    )}
+                                        {(currentMedia.type === 'SERIES' || currentMedia.type === 'ANIME') ? (
+                                            <button onClick={(e) => { e.stopPropagation(); incrementProgress(currentMedia); }} className="px-6 py-3 bg-pink-600 hover:bg-pink-700 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-pink-900/40 flex items-center gap-2 active:scale-95">
+                                                <PlayCircle className="w-4 h-4" /> Visto
+                                            </button>
+                                        ) : (
+                                            <button onClick={(e) => { e.stopPropagation(); updateStatus(currentMedia.id, 'COMPLETED'); }} className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-bold text-sm transition-all flex items-center gap-2 border border-white/20 active:scale-95">
+                                                <Check className="w-4 h-4" /> {currentMedia.type === 'BOOK' ? 'Lido' : 'Visto'}
+                                            </button>
+                                        )}
+                                    </div>
                                 </>
                             ) : (<div className="text-slate-500 italic text-lg">Nada na lista de ativos no momento.</div>)}
                         </div>
                     </div>
+                    )}
 
-                    <div className={`${isAdmin ? 'lg:col-span-2' : 'lg:col-span-1'} bg-slate-900/40 border border-white/10 rounded-3xl p-0 backdrop-blur-md relative overflow-hidden group ${isAdmin ? 'min-h-[220px]' : 'min-h-[450px]'} hover:border-violet-500/30 transition-all duration-300`}>
+                    {hasGames && (
+                    <div className="lg:col-span-2 bg-slate-900/40 border border-white/10 rounded-3xl p-0 backdrop-blur-md relative overflow-hidden group min-h-[220px] hover:border-violet-500/30 transition-all duration-300">
                         {currentGame?.posterUrl ? (
                             <div className="absolute inset-0 z-0">
                                 <img src={currentGame.posterUrl} alt="game" className="w-full h-full object-cover opacity-60 transition-transform duration-700 group-hover:scale-105 group-hover:opacity-50" />
                                 <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-transparent" />
-                                {!isAdmin && <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent" />}
                             </div>
                         ) : (<div className="absolute inset-0 bg-slate-800 z-0" />)}
 
@@ -294,26 +294,21 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, role }) => {
                             </div>
                         )}
 
-                        <div className={`relative z-10 p-8 md:p-12 h-full flex flex-col ${isAdmin ? 'justify-center' : 'justify-end'} max-w-2xl`}>
+                        <div className="relative z-10 p-8 md:p-12 h-full flex flex-col justify-center max-w-2xl">
                             {currentGame ? (
                                 <>
                                     <div className="flex items-center gap-2 bg-violet-500/20 text-violet-300 w-fit px-3 py-1.5 rounded-lg mb-4 backdrop-blur-sm border border-violet-500/20">
                                         <Gamepad2 className="w-4 h-4" />
                                         <span className="text-xs font-bold uppercase tracking-widest">Jogando Agora</span>
                                     </div>
-                                    <h3 className={`${isAdmin ? 'text-3xl' : 'text-5xl'} font-bold text-white mb-3 leading-tight drop-shadow-2xl line-clamp-2`}>{currentGame.title}</h3>
+                                    <h3 className="text-3xl font-bold text-white mb-3 leading-tight drop-shadow-2xl line-clamp-2">{currentGame.title}</h3>
                                     <div className="flex flex-wrap gap-3 text-sm text-slate-300 font-medium mb-8"><span className="bg-black/60 px-4 py-1.5 rounded-full border border-white/10 backdrop-blur-sm">{currentGame.platform || 'PC / Consoles'}</span></div>
-                                    {isAdmin ? (
-                                        <div className="flex gap-3"><button onClick={(e) => { e.stopPropagation(); updateGameStatus(currentGame.id, 'COMPLETED'); }} className="px-6 py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-violet-900/40 flex items-center gap-2 active:scale-95"><Trophy className="w-4 h-4" /> Finalizar Jogo</button></div>
-                                    ) : (
-                                        <button onClick={() => onNavigate(AppSection.GAMES)} className="group/btn flex items-center gap-3 text-white bg-violet-600/80 hover:bg-violet-600 px-6 py-3 rounded-xl font-bold text-sm transition-all w-fit shadow-lg shadow-pink-900/20">
-                                            Ver Coleção de Jogos <ArrowRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
-                                        </button>
-                                    )}
+                                    <div className="flex gap-3"><button onClick={(e) => { e.stopPropagation(); updateGameStatus(currentGame.id, 'COMPLETED'); }} className="px-6 py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-violet-900/40 flex items-center gap-2 active:scale-95"><Trophy className="w-4 h-4" /> Finalizar Jogo</button></div>
                                 </>
                             ) : (<div className="text-slate-500 italic text-lg">Nenhum jogo ativo no momento.</div>)}
                         </div>
                     </div>
+                    )
 
                 </div>
             </div>

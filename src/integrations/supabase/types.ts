@@ -27,6 +27,7 @@ export type Database = {
           synopsis: string | null
           title: string
           total_episodes: number | null
+          user_id: string
           watched_episodes: number | null
         }
         Insert: {
@@ -41,6 +42,7 @@ export type Database = {
           synopsis?: string | null
           title: string
           total_episodes?: number | null
+          user_id?: string
           watched_episodes?: number | null
         }
         Update: {
@@ -55,6 +57,7 @@ export type Database = {
           synopsis?: string | null
           title?: string
           total_episodes?: number | null
+          user_id?: string
           watched_episodes?: number | null
         }
         Relationships: []
@@ -74,6 +77,7 @@ export type Database = {
           status: string
           synopsis: string | null
           title: string
+          user_id: string
         }
         Insert: {
           author?: string | null
@@ -89,6 +93,7 @@ export type Database = {
           status?: string
           synopsis?: string | null
           title: string
+          user_id?: string
         }
         Update: {
           author?: string | null
@@ -104,6 +109,7 @@ export type Database = {
           status?: string
           synopsis?: string | null
           title?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -120,6 +126,7 @@ export type Database = {
           status: string
           synopsis: string | null
           title: string
+          user_id: string
         }
         Insert: {
           created_at?: string
@@ -133,6 +140,7 @@ export type Database = {
           status?: string
           synopsis?: string | null
           title: string
+          user_id?: string
         }
         Update: {
           created_at?: string
@@ -146,6 +154,7 @@ export type Database = {
           status?: string
           synopsis?: string | null
           title?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -162,6 +171,7 @@ export type Database = {
           status: string
           synopsis: string | null
           title: string
+          user_id: string
         }
         Insert: {
           created_at?: string
@@ -175,6 +185,7 @@ export type Database = {
           status?: string
           synopsis?: string | null
           title: string
+          user_id?: string
         }
         Update: {
           created_at?: string
@@ -188,6 +199,7 @@ export type Database = {
           status?: string
           synopsis?: string | null
           title?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -208,6 +220,7 @@ export type Database = {
           synopsis: string | null
           title: string
           total_seasons: number | null
+          user_id: string
           watched_seasons: number | null
         }
         Insert: {
@@ -226,6 +239,7 @@ export type Database = {
           synopsis?: string | null
           title: string
           total_seasons?: number | null
+          user_id?: string
           watched_seasons?: number | null
         }
         Update: {
@@ -244,6 +258,7 @@ export type Database = {
           synopsis?: string | null
           title?: string
           total_seasons?: number | null
+          user_id?: string
           watched_seasons?: number | null
         }
         Relationships: []
@@ -253,30 +268,36 @@ export type Database = {
           id: string
           name: string
           type: string
+          user_id: string
         }
         Insert: {
           id?: string
           name: string
           type: string
+          user_id?: string
         }
         Update: {
           id?: string
           name?: string
           type?: string
+          user_id?: string
         }
         Relationships: []
       }
       finance_reserves: {
         Row: {
           initial_amount: number
+          user_id: string
           year: number
         }
         Insert: {
           initial_amount?: number
+          user_id?: string
           year: number
         }
         Update: {
           initial_amount?: number
+          user_id?: string
           year?: number
         }
         Relationships: []
@@ -288,6 +309,7 @@ export type Database = {
           description: string | null
           id: string
           month: number
+          user_id: string
           year: number
         }
         Insert: {
@@ -296,6 +318,7 @@ export type Database = {
           description?: string | null
           id?: string
           month: number
+          user_id?: string
           year: number
         }
         Update: {
@@ -304,6 +327,7 @@ export type Database = {
           description?: string | null
           id?: string
           month?: number
+          user_id?: string
           year?: number
         }
         Relationships: [
@@ -315,6 +339,87 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          community_animes: boolean
+          community_books: boolean
+          community_finance: boolean
+          community_games: boolean
+          community_movies: boolean
+          community_series: boolean
+          community_vacation: boolean
+          created_at: string
+          date_of_birth: string | null
+          display_name: string
+          email: string | null
+          ent_animes: boolean
+          ent_books: boolean
+          ent_movies: boolean
+          ent_series: boolean
+          id: string
+          module_entertainment: boolean
+          module_finance: boolean
+          module_games: boolean
+          module_vacation: boolean
+          onboarding_completed: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          community_animes?: boolean
+          community_books?: boolean
+          community_finance?: boolean
+          community_games?: boolean
+          community_movies?: boolean
+          community_series?: boolean
+          community_vacation?: boolean
+          created_at?: string
+          date_of_birth?: string | null
+          display_name?: string
+          email?: string | null
+          ent_animes?: boolean
+          ent_books?: boolean
+          ent_movies?: boolean
+          ent_series?: boolean
+          id?: string
+          module_entertainment?: boolean
+          module_finance?: boolean
+          module_games?: boolean
+          module_vacation?: boolean
+          onboarding_completed?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          community_animes?: boolean
+          community_books?: boolean
+          community_finance?: boolean
+          community_games?: boolean
+          community_movies?: boolean
+          community_series?: boolean
+          community_vacation?: boolean
+          created_at?: string
+          date_of_birth?: string | null
+          display_name?: string
+          email?: string | null
+          ent_animes?: boolean
+          ent_books?: boolean
+          ent_movies?: boolean
+          ent_series?: boolean
+          id?: string
+          module_entertainment?: boolean
+          module_finance?: boolean
+          module_games?: boolean
+          module_vacation?: boolean
+          onboarding_completed?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
@@ -350,6 +455,7 @@ export type Database = {
           return_duration: string | null
           trip_id: string | null
           trip_type: string | null
+          user_id: string
           year: number
         }
         Insert: {
@@ -367,6 +473,7 @@ export type Database = {
           return_duration?: string | null
           trip_id?: string | null
           trip_type?: string | null
+          user_id?: string
           year?: number
         }
         Update: {
@@ -384,6 +491,7 @@ export type Database = {
           return_duration?: string | null
           trip_id?: string | null
           trip_type?: string | null
+          user_id?: string
           year?: number
         }
         Relationships: [
@@ -404,6 +512,7 @@ export type Database = {
           name: string
           price: number
           trip_id: string | null
+          user_id: string
           year: number
         }
         Insert: {
@@ -413,6 +522,7 @@ export type Database = {
           name: string
           price?: number
           trip_id?: string | null
+          user_id?: string
           year?: number
         }
         Update: {
@@ -422,6 +532,7 @@ export type Database = {
           name?: string
           price?: number
           trip_id?: string | null
+          user_id?: string
           year?: number
         }
         Relationships: [
@@ -444,6 +555,7 @@ export type Database = {
           time: string
           trip_id: string | null
           type: string
+          user_id: string
           year: number
         }
         Insert: {
@@ -455,6 +567,7 @@ export type Database = {
           time: string
           trip_id?: string | null
           type: string
+          user_id?: string
           year?: number
         }
         Update: {
@@ -466,6 +579,7 @@ export type Database = {
           time?: string
           trip_id?: string | null
           type?: string
+          user_id?: string
           year?: number
         }
         Relationships: [
@@ -486,6 +600,7 @@ export type Database = {
           end_date: string | null
           id: string
           start_date: string | null
+          user_id: string
           year: number
         }
         Insert: {
@@ -495,6 +610,7 @@ export type Database = {
           end_date?: string | null
           id?: string
           start_date?: string | null
+          user_id?: string
           year?: number
         }
         Update: {
@@ -504,6 +620,7 @@ export type Database = {
           end_date?: string | null
           id?: string
           start_date?: string | null
+          user_id?: string
           year?: number
         }
         Relationships: []

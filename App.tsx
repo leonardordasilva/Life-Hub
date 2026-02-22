@@ -9,24 +9,18 @@ import { LoginScreen } from './views/LoginScreen';
 import { LandingPage } from './views/LandingPage';
 import { ForgotPassword } from './views/ForgotPassword';
 import { ResetPassword } from './views/ResetPassword';
+import { OnboardingFlow, OnboardingData } from './views/Onboarding/OnboardingFlow';
+import { ProfilePage } from './views/Profile/ProfilePage';
 import { AppSection } from './types';
 import { 
-  LayoutDashboard, 
-  Wallet, 
-  Plane, 
-  Film, 
-  Gamepad2, 
-  Loader2, 
-  Menu,
-  X,
-  Settings,
-  LogOut
+  LayoutDashboard, Wallet, Plane, Film, Gamepad2, Loader2, Menu, X, User, LogOut
 } from 'lucide-react';
 import { useAuth } from './hooks/useAuth';
+import { useProfile } from './hooks/useProfile';
 import { supabase } from './services/supabaseClient';
 
 const App: React.FC = () => {
-  const [currentSection, setCurrentSection] = useState<AppSection>(AppSection.HOME);
+  const [currentSection, setCurrentSection] = useState<AppSection | 'PROFILE'>(AppSection.HOME);
   const [isDbReady, setIsDbReady] = useState<boolean | null>(null);
   const [dbError, setDbError] = useState<string | null>(null);
   const [retryTrigger, setRetryTrigger] = useState(0);
@@ -35,30 +29,25 @@ const App: React.FC = () => {
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [authView, setAuthView] = useState<'landing' | 'login' | 'signup'>('landing');
   
-  const { user, userRole, loading: authLoading, signIn, signUp, signOut } = useAuth();
+  const { user, loading: authLoading, signIn, signUp, signOut } = useAuth();
+  const { profile, loading: profileLoading, updateProfile, uploadAvatar, refetch: refetchProfile } = useProfile(user?.id ?? null);
 
   useEffect(() => {
-    if (!user) return; // Don't check DB until authenticated
+    if (!user || !profile?.onboarding_completed) return;
     
     const checkDatabase = async () => {
       try {
-        const { error: financeError } = await supabase.from('finance_categories').select('id').limit(1);
-        // For non-admin users, RLS will block this - that's OK
-        if (financeError && !financeError.message.includes('row-level security')) throw financeError;
-
         const { error: entError } = await supabase.from('ent_series').select('title').limit(1);
         if (entError) throw entError;
-
         setIsDbReady(true);
       } catch (e: any) {
         console.error("DB Check Exception:", e);
-        setDbError(e.message || "Erro desconhecido de conexão ou tabelas ausentes.");
+        setDbError(e.message || "Erro desconhecido.");
         setIsDbReady(false);
       }
     };
-
     checkDatabase();
-  }, [retryTrigger, user]);
+  }, [retryTrigger, user, profile?.onboarding_completed]);
 
   const handleRetry = () => {
     setIsDbReady(null);
@@ -69,6 +58,40 @@ const App: React.FC = () => {
   const handleLogout = async () => {
     await signOut();
     setCurrentSection(AppSection.HOME);
+    setAuthView('landing');
+  };
+
+  const handleOnboardingComplete = async (data: OnboardingData) => {
+    if (!user) return;
+    
+    let avatarUrl: string | null = null;
+    if (data.avatarFile) {
+      avatarUrl = await uploadAvatar(data.avatarFile);
+    }
+
+    await updateProfile({
+      display_name: data.displayName,
+      date_of_birth: data.dateOfBirth,
+      avatar_url: avatarUrl,
+      onboarding_completed: true,
+      module_finance: data.modules.finance,
+      module_vacation: data.modules.vacation,
+      module_entertainment: data.modules.entertainment,
+      module_games: data.modules.games,
+      ent_series: data.entSubTypes.series,
+      ent_movies: data.entSubTypes.movies,
+      ent_animes: data.entSubTypes.animes,
+      ent_books: data.entSubTypes.books,
+      community_finance: data.community.finance,
+      community_vacation: data.community.vacation,
+      community_games: data.community.games,
+      community_series: data.community.series,
+      community_movies: data.community.movies,
+      community_animes: data.community.animes,
+      community_books: data.community.books,
+    } as any);
+
+    await refetchProfile();
   };
 
   // Check for reset-password route
@@ -80,7 +103,7 @@ const App: React.FC = () => {
     }
   }, []);
 
-  if (authLoading) {
+  if (authLoading || profileLoading) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
         <Loader2 className="w-10 h-10 text-cyan-500 animate-spin" />
@@ -95,7 +118,7 @@ const App: React.FC = () => {
     }} />;
   }
 
-  if (!user || !userRole) {
+  if (!user) {
     if (showForgotPassword) {
       return <ForgotPassword onBack={() => { setShowForgotPassword(false); setAuthView('login'); }} />;
     }
@@ -110,11 +133,19 @@ const App: React.FC = () => {
         />
       );
     }
+    return <LandingPage onGoToLogin={() => setAuthView('login')} onGoToSignUp={() => setAuthView('signup')} />;
+  }
+
+  // Onboarding check
+  if (profile && !profile.onboarding_completed) {
+    return <OnboardingFlow email={user.email || ''} onComplete={handleOnboardingComplete} />;
+  }
+
+  if (!profile) {
     return (
-      <LandingPage 
-        onGoToLogin={() => setAuthView('login')} 
-        onGoToSignUp={() => setAuthView('signup')} 
-      />
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <Loader2 className="w-10 h-10 text-cyan-500 animate-spin" />
+      </div>
     );
   }
 
@@ -133,36 +164,28 @@ const App: React.FC = () => {
   const renderSection = () => {
     switch (currentSection) {
       case AppSection.HOME:
-        return <Home onNavigate={setCurrentSection} role={userRole} />;
+        return <Home onNavigate={(s) => setCurrentSection(s)} profile={profile} />;
       case AppSection.FINANCE:
-        return userRole === 'ADMIN' ? <FinanceDashboard role={userRole} /> : <Home onNavigate={setCurrentSection} role={userRole} />;
+        return profile.module_finance ? <FinanceDashboard /> : <Home onNavigate={(s) => setCurrentSection(s)} profile={profile} />;
       case AppSection.VACATION:
-        return userRole === 'ADMIN' ? <VacationDashboard role={userRole} /> : <Home onNavigate={setCurrentSection} role={userRole} />;
+        return profile.module_vacation ? <VacationDashboard /> : <Home onNavigate={(s) => setCurrentSection(s)} profile={profile} />;
       case AppSection.ENTERTAINMENT:
-        return <EntertainmentDashboard role={userRole} />;
+        return profile.module_entertainment ? <EntertainmentDashboard profile={profile} /> : <Home onNavigate={(s) => setCurrentSection(s)} profile={profile} />;
       case AppSection.GAMES:
-        return <GamesDashboard role={userRole} />;
-      case AppSection.SETUP:
-        return (
-            <SetupScreen 
-                error={null} 
-                onRetry={() => { 
-                    handleRetry(); 
-                    setCurrentSection(AppSection.HOME); 
-                }} 
-            />
-        );
+        return profile.module_games ? <GamesDashboard /> : <Home onNavigate={(s) => setCurrentSection(s)} profile={profile} />;
+      case 'PROFILE':
+        return <ProfilePage userId={user.id} profile={profile} onUpdate={refetchProfile} />;
       default:
-        return <Home onNavigate={setCurrentSection} role={userRole} />;
+        return <Home onNavigate={(s) => setCurrentSection(s)} profile={profile} />;
     }
   };
 
   const navItems = [
     { id: AppSection.HOME, label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" />, visible: true },
-    { id: AppSection.FINANCE, label: 'Financeiro', icon: <Wallet className="w-5 h-5" />, visible: userRole === 'ADMIN' },
-    { id: AppSection.VACATION, label: 'Férias', icon: <Plane className="w-5 h-5" />, visible: userRole === 'ADMIN' },
-    { id: AppSection.ENTERTAINMENT, label: 'Entretenimento', icon: <Film className="w-5 h-5" />, visible: userRole === 'ADMIN' },
-    { id: AppSection.GAMES, label: 'Jogos', icon: <Gamepad2 className="w-5 h-5" />, visible: userRole === 'ADMIN' },
+    { id: AppSection.FINANCE, label: 'Financeiro', icon: <Wallet className="w-5 h-5" />, visible: profile.module_finance },
+    { id: AppSection.VACATION, label: 'Férias', icon: <Plane className="w-5 h-5" />, visible: profile.module_vacation },
+    { id: AppSection.ENTERTAINMENT, label: 'Entretenimento', icon: <Film className="w-5 h-5" />, visible: profile.module_entertainment },
+    { id: AppSection.GAMES, label: 'Jogos', icon: <Gamepad2 className="w-5 h-5" />, visible: profile.module_games },
   ].filter(item => item.visible);
 
   return (
@@ -181,13 +204,7 @@ const App: React.FC = () => {
         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
         <div className="p-6 border-b border-white/5">
-           <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400">
-             Live Hub
-           </h1>
-           <div className="flex items-center gap-2 mt-1">
-               <div className={`w-2 h-2 rounded-full ${userRole === 'ADMIN' ? 'bg-indigo-500' : 'bg-emerald-500'}`} />
-               <p className="text-xs text-slate-500">{userRole === 'ADMIN' ? 'Administrador' : 'Visitante'}</p>
-           </div>
+           <h1 className="text-2xl font-bold text-white">Live Hub</h1>
         </div>
 
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto custom-scrollbar">
@@ -216,24 +233,23 @@ const App: React.FC = () => {
         </nav>
 
         <div className="p-4 border-t border-white/5 space-y-2">
-            {userRole === 'ADMIN' && (
-                <button
-                    onClick={() => {
-                    setCurrentSection(AppSection.SETUP);
-                    setIsMobileMenuOpen(false);
-                    }}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
-                    currentSection === AppSection.SETUP
-                        ? 'bg-gradient-to-r from-indigo-600/20 to-purple-600/20 text-white border border-indigo-500/30 shadow-[0_0_15px_rgba(99,102,241,0.15)]' 
-                        : 'text-slate-400 hover:text-white hover:bg-white/5 border border-transparent'
-                    }`}
-                >
-                    <span className={currentSection === AppSection.SETUP ? 'text-indigo-400' : 'text-slate-500'}>
-                    <Settings className="w-5 h-5" />
-                    </span>
-                    Configurações
-                </button>
-            )}
+            <button
+              onClick={() => { setCurrentSection('PROFILE'); setIsMobileMenuOpen(false); }}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+                currentSection === 'PROFILE'
+                  ? 'bg-gradient-to-r from-indigo-600/20 to-purple-600/20 text-white border border-indigo-500/30' 
+                  : 'text-slate-400 hover:text-white hover:bg-white/5 border border-transparent'
+              }`}
+            >
+              <div className="w-6 h-6 rounded-full bg-slate-800 overflow-hidden flex items-center justify-center border border-white/10">
+                {profile.avatar_url ? (
+                  <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <User className="w-3.5 h-3.5 text-slate-500" />
+                )}
+              </div>
+              {profile.display_name || 'Perfil'}
+            </button>
             <button
                 onClick={handleLogout}
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 text-slate-400 hover:text-red-400 hover:bg-red-500/10 border border-transparent"

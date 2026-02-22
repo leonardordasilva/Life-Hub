@@ -2,13 +2,11 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { useVacation } from '../../hooks/useVacation';
 import { useToast } from '../../components/Toast';
 import { Plane, Building, Map, Plus, Trash2, Calendar, Clock, Ticket, Pencil, Check, DollarSign, MapPin, Luggage, Loader2, Timer, ChevronLeft, ChevronRight } from 'lucide-react';
-import { VacationFlight, VacationHotel, VacationTour, TourType, VacationTrip, UserRole, FlightTripType } from '../../types';
+import { VacationFlight, VacationHotel, VacationTour, TourType, VacationTrip, FlightTripType } from '../../types';
 
-interface VacationDashboardProps {
-    role: UserRole;
-}
+interface VacationDashboardProps {}
 
-export const VacationDashboard: React.FC<VacationDashboardProps> = ({ role }) => {
+export const VacationDashboard: React.FC<VacationDashboardProps> = () => {
   const { showToast } = useToast();
   const handleError = useCallback((msg: string) => showToast(msg, 'error'), [showToast]);
   const { 
@@ -17,7 +15,7 @@ export const VacationDashboard: React.FC<VacationDashboardProps> = ({ role }) =>
     addFlight, editFlight, removeFlight, 
     addHotel, editHotel, removeHotel, 
     addTour, editTour, removeTour 
-  } = useVacation(role, handleError);
+  } = useVacation(undefined, handleError);
 
   const isAdmin = role === 'ADMIN';
 
