@@ -67,6 +67,7 @@ interface GamesDashboardProps {}
 export const GamesDashboard: React.FC<GamesDashboardProps> = () => {
     const { games, loading, addGame, editGame, syncGame, checkMetadataSync, applyBatchUpdates, removeGame, updateGameStatus } = useGames();
     const { showToast } = useToast();
+    const isAdmin = true; // All users can manage their own data (RLS handles isolation)
 
     // State
     const [searchQuery, setSearchQuery] = useState('');

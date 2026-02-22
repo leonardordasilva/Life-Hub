@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { VacationFlight, VacationHotel, VacationTour, VacationTrip, UserRole } from '../types';
+import { VacationFlight, VacationHotel, VacationTour, VacationTrip } from '../types';
 import { supabase } from '../services/supabaseClient';
 
-export const useVacation = (role?: UserRole, onError?: (msg: string) => void) => {
+export const useVacation = (onError?: (msg: string) => void) => {
   const [trips, setTrips] = useState<VacationTrip[]>([]);
   const [flights, setFlights] = useState<VacationFlight[]>([]);
   const [hotels, setHotels] = useState<VacationHotel[]>([]);
@@ -13,15 +13,6 @@ export const useVacation = (role?: UserRole, onError?: (msg: string) => void) =>
 
   const fetchData = async () => {
     setLoading(true);
-
-    if (role === 'VISITOR') {
-        setTrips([]);
-        setFlights([]);
-        setHotels([]);
-        setTours([]);
-        setLoading(false);
-        return;
-    }
 
     try {
       const [tripsRes, flightsRes, hotelsRes, toursRes] = await Promise.all([
@@ -102,10 +93,9 @@ export const useVacation = (role?: UserRole, onError?: (msg: string) => void) =>
 
   useEffect(() => {
     fetchData();
-  }, [role]);
+  }, []);
 
   const addTrip = async (trip: Omit<VacationTrip, 'id'>) => {
-      if (role === 'VISITOR') return;
       const tempId = crypto.randomUUID();
       setTrips(prev => [...prev, { ...trip, id: tempId }]);
       const { data, error } = await supabase.from('vacation_trips').insert({
@@ -127,7 +117,6 @@ export const useVacation = (role?: UserRole, onError?: (msg: string) => void) =>
   };
 
   const editTrip = async (trip: VacationTrip) => {
-      if (role === 'VISITOR') return;
       setTrips(prev => prev.map(t => t.id === trip.id ? trip : t));
       await supabase.from('vacation_trips').update({
           destination: trip.destination,
@@ -139,13 +128,11 @@ export const useVacation = (role?: UserRole, onError?: (msg: string) => void) =>
   };
   
   const removeTrip = async (id: string) => {
-      if (role === 'VISITOR') return;
       setTrips(prev => prev.filter(t => t.id !== id));
       await supabase.from('vacation_trips').delete().eq('id', id);
   };
 
   const addFlight = async (flight: Omit<VacationFlight, 'id'>) => {
-    if (role === 'VISITOR') return;
     const tempId = crypto.randomUUID();
     setFlights(prev => [...prev, { ...flight, id: tempId }].sort((a, b) => new Date(a.departureTime).getTime() - new Date(b.departureTime).getTime()));
     const { data, error } = await supabase.from('vacation_flights').insert({
@@ -179,7 +166,6 @@ export const useVacation = (role?: UserRole, onError?: (msg: string) => void) =>
   };
 
   const editFlight = async (flight: VacationFlight) => {
-    if (role === 'VISITOR') return;
     setFlights(prev => prev.map(f => f.id === flight.id ? flight : f).sort((a, b) => new Date(a.departureTime).getTime() - new Date(b.departureTime).getTime()));
     await supabase.from('vacation_flights').update({
       trip_id: flight.tripId,
@@ -200,13 +186,11 @@ export const useVacation = (role?: UserRole, onError?: (msg: string) => void) =>
   };
 
   const removeFlight = async (id: string) => {
-    if (role === 'VISITOR') return;
     setFlights(prev => prev.filter(f => f.id !== id));
     await supabase.from('vacation_flights').delete().eq('id', id);
   };
 
   const addHotel = async (hotel: Omit<VacationHotel, 'id'>) => {
-    if (role === 'VISITOR') return;
     const tempId = crypto.randomUUID();
     setHotels(prev => [...prev, { ...hotel, id: tempId }].sort((a, b) => new Date(a.checkIn).getTime() - new Date(b.checkIn).getTime()));
     const { data, error } = await supabase.from('vacation_hotels').insert({
@@ -229,7 +213,6 @@ export const useVacation = (role?: UserRole, onError?: (msg: string) => void) =>
   };
 
   const editHotel = async (hotel: VacationHotel) => {
-    if (role === 'VISITOR') return;
     setHotels(prev => prev.map(h => h.id === hotel.id ? hotel : h).sort((a, b) => new Date(a.checkIn).getTime() - new Date(b.checkIn).getTime()));
     await supabase.from('vacation_hotels').update({
       trip_id: hotel.tripId,
@@ -242,13 +225,11 @@ export const useVacation = (role?: UserRole, onError?: (msg: string) => void) =>
   };
 
   const removeHotel = async (id: string) => {
-    if (role === 'VISITOR') return;
     setHotels(prev => prev.filter(h => h.id !== id));
     await supabase.from('vacation_hotels').delete().eq('id', id);
   };
 
   const addTour = async (tour: Omit<VacationTour, 'id'>) => {
-    if (role === 'VISITOR') return;
     const tempId = crypto.randomUUID();
     setTours(prev => [...prev, { ...tour, id: tempId }].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
     const { data, error } = await supabase.from('vacation_tours').insert({
@@ -273,7 +254,6 @@ export const useVacation = (role?: UserRole, onError?: (msg: string) => void) =>
   };
 
   const editTour = async (tour: VacationTour) => {
-    if (role === 'VISITOR') return;
     setTours(prev => prev.map(t => t.id === tour.id ? tour : t).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
     await supabase.from('vacation_tours').update({
       trip_id: tour.tripId,
@@ -288,7 +268,6 @@ export const useVacation = (role?: UserRole, onError?: (msg: string) => void) =>
   };
 
   const removeTour = async (id: string) => {
-    if (role === 'VISITOR') return;
     setTours(prev => prev.filter(t => t.id !== id));
     await supabase.from('vacation_tours').delete().eq('id', id);
   };

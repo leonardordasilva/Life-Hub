@@ -23,9 +23,9 @@ export const FinanceDashboard: React.FC<FinanceDashboardProps> = () => {
     removeTransaction,
     updateReserve,
     getReserveForYear
-  } = useFinanceData(role, handleError);
+  } = useFinanceData(handleError);
 
-  const [activeTab, setActiveTab] = useState<'categories' | 'transactions' | 'report'>(role === 'ADMIN' ? 'categories' : 'report');
+  const [activeTab, setActiveTab] = useState<'categories' | 'transactions' | 'report'>('categories');
   const [year, setYear] = useState(new Date().getFullYear());
 
   // Compute years that have transactions
@@ -64,7 +64,7 @@ export const FinanceDashboard: React.FC<FinanceDashboardProps> = () => {
     return initialReserve + contribution;
   }, [categories, transactions, year, initialReserve]);
 
-  const isAdmin = role === 'ADMIN';
+  // All users can manage their own data (RLS handles isolation)
 
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 p-6 md:p-12 pb-24">
@@ -119,7 +119,7 @@ export const FinanceDashboard: React.FC<FinanceDashboardProps> = () => {
 
         {/* Global Stats / Reserve Config */}
         <div className="relative">
-            {!isAdmin && (
+            {false && (
                 <div className="absolute inset-0 z-10 bg-black/10 backdrop-blur-[1px] flex items-center justify-center rounded-xl border border-white/5">
                     <div className="bg-slate-900/90 p-3 rounded-lg border border-white/10 flex items-center gap-2 text-slate-400 text-sm shadow-xl">
                         <AlertTriangle className="w-4 h-4 text-amber-400" />
@@ -137,9 +137,7 @@ export const FinanceDashboard: React.FC<FinanceDashboardProps> = () => {
 
         {/* Navigation Tabs */}
         <div className="flex flex-wrap gap-1.5 mb-8 bg-slate-800/60 p-1.5 rounded-2xl border border-white/5 backdrop-blur-sm w-fit">
-          {isAdmin && (
-              <>
-                <button
+          <button
                     onClick={() => setActiveTab('categories')}
                     className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all duration-200 font-medium text-sm ${
                     activeTab === 'categories' 
@@ -159,8 +157,6 @@ export const FinanceDashboard: React.FC<FinanceDashboardProps> = () => {
                 >
                     <LayoutDashboard className="w-4 h-4" /> Lançamentos
                 </button>
-              </>
-          )}
           
           <button
             onClick={() => setActiveTab('report')}
@@ -176,7 +172,7 @@ export const FinanceDashboard: React.FC<FinanceDashboardProps> = () => {
 
         {/* Content Area */}
         <div className="min-h-[500px]">
-          {activeTab === 'categories' && isAdmin && (
+          {activeTab === 'categories' && (
             <CategoryManager 
               categories={categories} 
               onAdd={addCategory} 
@@ -185,7 +181,7 @@ export const FinanceDashboard: React.FC<FinanceDashboardProps> = () => {
             />
           )}
           
-          {activeTab === 'transactions' && isAdmin && (
+          {activeTab === 'transactions' && (
             <TransactionManager 
               categories={categories}
               transactions={transactions}

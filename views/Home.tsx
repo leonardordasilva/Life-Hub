@@ -46,7 +46,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, profile }) => {
         return <Moon className="w-6 h-6 text-indigo-400" />;
     };
 
-    const { transactions, categories, getReserveForYear, loading: financeLoading } = useFinanceData('ADMIN');
+    const { transactions, categories, getReserveForYear, loading: financeLoading } = useFinanceData();
     const { trips, flights, hotels, tours, loading: vacationLoading } = useVacation();
     const { items, loading: entertainmentLoading, updateStatus, incrementProgress } = useEntertainment();
     const { games, loading: gamesLoading, updateGameStatus } = useGames();
@@ -111,20 +111,13 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, profile }) => {
 
     const { activeMediaList, activeGamesList } = useMemo(() => {
         if (entertainmentLoading || gamesLoading) return { activeMediaList: [], activeGamesList: [] };
-
-        // Organização por tipo conforme solicitado: Séries, Filmes, Animes, Livros
         const watchingSeries = items.filter(i => i.type === 'SERIES' && i.status === 'WATCHING');
-
         const nextMovies = items.filter(i => i.type === 'MOVIE' && i.status === 'PENDING')
             .sort((a, b) => (a.releaseDate || '9999').localeCompare(b.releaseDate || '9999'));
         const nextMovie = nextMovies.length > 0 ? [nextMovies[0]] : [];
-
         const watchingAnimes = items.filter(i => i.type === 'ANIME' && i.status === 'WATCHING');
-
         const readingBooks = items.filter(i => i.type === 'BOOK' && i.status === 'WATCHING');
-
         const activeGames = games.filter(i => i.status === 'WATCHING');
-
         return {
             activeMediaList: [...watchingSeries, ...nextMovie, ...watchingAnimes, ...readingBooks],
             activeGamesList: activeGames
@@ -210,26 +203,28 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, profile }) => {
                                     <div className="flex justify-between items-center text-xs"><span className="text-slate-400">Saldo Inicial:</span><span className="text-white font-medium">{financeSummary ? formatCurrency(financeSummary.initialReserve) : '...'}</span></div>
                                 </div>
                             </div>
-
-                            <div className="bg-slate-900/40 border border-white/10 rounded-3xl p-0 backdrop-blur-md relative overflow-hidden group flex flex-col hover:border-cyan-500/30 transition-all duration-300">
-                                {vacationSummary ? (
-                                    <>
-                                        <div className="absolute inset-0 z-0 bg-slate-800"><img src={vacationSummary.trip.coverUrl || destinationImage || `https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=800&auto=format&fit=crop`} alt="vacation" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=800&auto=format&fit=crop'; }} /><div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent" /></div>
-                                        <div className="relative z-10 p-6 flex flex-col h-full justify-between">
-                                            <div className="flex items-center gap-2 text-cyan-300 bg-black/30 w-fit px-2 py-1 rounded-lg backdrop-blur-sm"><Plane className="w-4 h-4" /><span className="text-xs font-bold uppercase">Próxima Viagem</span></div>
-                                            <div>
-                                                <h4 className="text-2xl font-bold text-white leading-none mb-2 drop-shadow-lg">{vacationSummary.trip.destination}</h4>
-                                                <div className="flex flex-col gap-2 mb-4">
-                                                    <div className="flex items-center gap-2 text-sm text-cyan-100 font-medium drop-shadow-md"><Timer className="w-4 h-4" />{vacationSummary.daysUntil > 0 ? <span>Faltam <span className="font-bold text-white text-lg">{vacationSummary.daysUntil}</span> dias</span> : <span>Boa Viagem!</span>}</div>
-                                                    <div className="flex items-center gap-2 text-xs text-slate-300 bg-black/40 px-2 py-1 rounded w-fit backdrop-blur-sm"><Calendar className="w-3 h-3" /><span>{vacationSummary.dateRange} ({vacationSummary.days} dias)</span></div>
-                                                </div>
-                                                <div className="pt-3 border-t border-white/20 flex justify-between items-center"><span className="text-xs text-cyan-100/80">Custo Total</span><span className="text-sm font-bold text-white bg-black/40 px-2 py-1 rounded">{formatCurrency(vacationSummary.totalCost)}</span></div>
-                                            </div>
-                                        </div>
-                                    </>
-                                ) : (<div className="absolute inset-0 bg-cyan-900/20 z-0 flex flex-col items-center justify-center flex-1 text-slate-400 p-6 text-center"><Plane className="w-12 h-12 mb-4 text-slate-600" /><p className="text-sm">Nenhuma viagem definida para {currentYear}</p></div>)}
-                            </div>
                         </>
+                    )}
+
+                    {hasVacation && (
+                        <div className="bg-slate-900/40 border border-white/10 rounded-3xl p-0 backdrop-blur-md relative overflow-hidden group flex flex-col hover:border-cyan-500/30 transition-all duration-300">
+                            {vacationSummary ? (
+                                <>
+                                    <div className="absolute inset-0 z-0 bg-slate-800"><img src={vacationSummary.trip.coverUrl || destinationImage || `https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=800&auto=format&fit=crop`} alt="vacation" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=800&auto=format&fit=crop'; }} /><div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent" /></div>
+                                    <div className="relative z-10 p-6 flex flex-col h-full justify-between">
+                                        <div className="flex items-center gap-2 text-cyan-300 bg-black/30 w-fit px-2 py-1 rounded-lg backdrop-blur-sm"><Plane className="w-4 h-4" /><span className="text-xs font-bold uppercase">Próxima Viagem</span></div>
+                                        <div>
+                                            <h4 className="text-2xl font-bold text-white leading-none mb-2 drop-shadow-lg">{vacationSummary.trip.destination}</h4>
+                                            <div className="flex flex-col gap-2 mb-4">
+                                                <div className="flex items-center gap-2 text-sm text-cyan-100 font-medium drop-shadow-md"><Timer className="w-4 h-4" />{vacationSummary.daysUntil > 0 ? <span>Faltam <span className="font-bold text-white text-lg">{vacationSummary.daysUntil}</span> dias</span> : <span>Boa Viagem!</span>}</div>
+                                                <div className="flex items-center gap-2 text-xs text-slate-300 bg-black/40 px-2 py-1 rounded w-fit backdrop-blur-sm"><Calendar className="w-3 h-3" /><span>{vacationSummary.dateRange} ({vacationSummary.days} dias)</span></div>
+                                            </div>
+                                            <div className="pt-3 border-t border-white/20 flex justify-between items-center"><span className="text-xs text-cyan-100/80">Custo Total</span><span className="text-sm font-bold text-white bg-black/40 px-2 py-1 rounded">{formatCurrency(vacationSummary.totalCost)}</span></div>
+                                        </div>
+                                    </div>
+                                </>
+                            ) : (<div className="absolute inset-0 bg-cyan-900/20 z-0 flex flex-col items-center justify-center flex-1 text-slate-400 p-6 text-center"><Plane className="w-12 h-12 mb-4 text-slate-600" /><p className="text-sm">Nenhuma viagem definida para {currentYear}</p></div>)}
+                        </div>
                     )}
 
                     {hasEntertainment && (
@@ -261,7 +256,6 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, profile }) => {
                                         {(currentMedia.type === 'MOVIE' || currentMedia.type === 'BOOK') && (<span className="bg-black/60 px-4 py-1.5 rounded-full border border-white/10 backdrop-blur-sm">{currentMedia.status === 'WATCHING' ? 'Em andamento' : 'Na Fila de Espera'}</span>)}
                                     </div>
                                     <div className="flex gap-3">
-                                        <div className="flex gap-3">
                                         {(currentMedia.type === 'SERIES' || currentMedia.type === 'ANIME') ? (
                                             <button onClick={(e) => { e.stopPropagation(); incrementProgress(currentMedia); }} className="px-6 py-3 bg-pink-600 hover:bg-pink-700 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-pink-900/40 flex items-center gap-2 active:scale-95">
                                                 <PlayCircle className="w-4 h-4" /> Visto
@@ -308,7 +302,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, profile }) => {
                             ) : (<div className="text-slate-500 italic text-lg">Nenhum jogo ativo no momento.</div>)}
                         </div>
                     </div>
-                    )
+                    )}
 
                 </div>
             </div>

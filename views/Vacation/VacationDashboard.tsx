@@ -15,9 +15,10 @@ export const VacationDashboard: React.FC<VacationDashboardProps> = () => {
     addFlight, editFlight, removeFlight, 
     addHotel, editHotel, removeHotel, 
     addTour, editTour, removeTour 
-  } = useVacation(undefined, handleError);
+  } = useVacation(handleError);
 
-  const isAdmin = role === 'ADMIN';
+  // All users can fully manage their own data (RLS handles isolation)
+  const isAdmin = true;
 
   // Navigation
   const [activeTab, setActiveTab] = useState<'FLIGHTS' | 'HOTELS' | 'TOURS'>('FLIGHTS');

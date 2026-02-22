@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { FinanceCategory, FinanceTransaction, AnnualReserve, TransactionType, UserRole } from '../types';
+import { FinanceCategory, FinanceTransaction, AnnualReserve, TransactionType } from '../types';
 import { supabase } from '../services/supabaseClient';
 
-export const useFinanceData = (role: UserRole, onError?: (msg: string) => void) => {
+export const useFinanceData = (onError?: (msg: string) => void) => {
   const [categories, setCategories] = useState<FinanceCategory[]>([]);
   const [transactions, setTransactions] = useState<FinanceTransaction[]>([]);
   const [reserves, setReserves] = useState<AnnualReserve[]>([]);
@@ -12,14 +12,6 @@ export const useFinanceData = (role: UserRole, onError?: (msg: string) => void) 
 
   const fetchData = async () => {
     setLoading(true);
-    
-    if (role === 'VISITOR') {
-        setCategories([]);
-        setTransactions([]);
-        setReserves([]);
-        setLoading(false);
-        return;
-    }
 
     try {
       const [catsResult, transResult, resResult] = await Promise.all([
@@ -65,10 +57,9 @@ export const useFinanceData = (role: UserRole, onError?: (msg: string) => void) 
 
   useEffect(() => {
     fetchData();
-  }, [role]);
+  }, []);
 
   const addCategory = async (name: string, type: TransactionType) => {
-    if (role === 'VISITOR') return;
     const tempId = crypto.randomUUID();
     const newCat = { id: tempId, name, type };
     setCategories(prev => [...prev, newCat]);
@@ -82,19 +73,16 @@ export const useFinanceData = (role: UserRole, onError?: (msg: string) => void) 
   };
 
   const editCategory = async (id: string, name: string, type: TransactionType) => {
-    if (role === 'VISITOR') return;
     setCategories(prev => prev.map(c => c.id === id ? { ...c, name, type } : c));
     await supabase.from('finance_categories').update({ name, type }).eq('id', id);
   };
 
   const removeCategory = async (id: string) => {
-    if (role === 'VISITOR') return;
     setCategories(prev => prev.filter(c => c.id !== id));
     await supabase.from('finance_categories').delete().eq('id', id);
   };
 
   const addTransaction = async (transaction: Omit<FinanceTransaction, 'id'>) => {
-    if (role === 'VISITOR') return;
     const tempId = crypto.randomUUID();
     setTransactions(prev => [...prev, { ...transaction, id: tempId }]);
     const { data, error } = await supabase.from('finance_transactions').insert({
@@ -120,7 +108,6 @@ export const useFinanceData = (role: UserRole, onError?: (msg: string) => void) 
   };
 
   const editTransaction = async (transaction: FinanceTransaction) => {
-    if (role === 'VISITOR') return;
     setTransactions(prev => prev.map(t => t.id === transaction.id ? transaction : t));
     await supabase.from('finance_transactions').update({
         category_id: transaction.categoryId,
@@ -132,13 +119,11 @@ export const useFinanceData = (role: UserRole, onError?: (msg: string) => void) 
   };
 
   const removeTransaction = async (id: string) => {
-    if (role === 'VISITOR') return;
     setTransactions(prev => prev.filter(t => t.id !== id));
     await supabase.from('finance_transactions').delete().eq('id', id);
   };
 
   const updateReserve = async (year: number, initialAmount: number) => {
-    if (role === 'VISITOR') return;
     const existingIndex = reserves.findIndex(r => r.year === year);
     let newReserves = [...reserves];
     if (existingIndex >= 0) {
