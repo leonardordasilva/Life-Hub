@@ -68,7 +68,7 @@ const PosterCard: React.FC<PosterCardProps> = ({ item, children, actions, onClic
 interface GamesDashboardProps {}
 
 export const GamesDashboard: React.FC<GamesDashboardProps> = () => {
-    const { games, loading, addGame, editGame, syncGame, checkMetadataSync, applyBatchUpdates, removeGame, updateGameStatus, clearAllGames } = useGames();
+    const { games, loading, addGame, addGameSilent, fetchGames, editGame, syncGame, checkMetadataSync, applyBatchUpdates, removeGame, updateGameStatus, clearAllGames } = useGames();
     const { showToast } = useToast();
     const isAdmin = true; // All users can manage their own data (RLS handles isolation)
 
@@ -525,7 +525,7 @@ export const GamesDashboard: React.FC<GamesDashboardProps> = () => {
                 onImport={async (rows, onProgress) => {
                     for (let i = 0; i < rows.length; i++) {
                         const row = rows[i];
-                        await addGame({
+                        await addGameSilent({
                             title: row.title,
                             status: (row.status as MediaStatus) || 'PENDING',
                             rating: row.rating,
@@ -534,8 +534,8 @@ export const GamesDashboard: React.FC<GamesDashboardProps> = () => {
                             genres: row.genres,
                         });
                         onProgress({ current: i + 1, total: rows.length, percent: Math.round(((i + 1) / rows.length) * 100) });
-                        await new Promise(r => setTimeout(r, 30));
                     }
+                    await fetchGames();
                     showToast(`${rows.length} jogos importados com sucesso!`, 'success');
                 }}
             />
