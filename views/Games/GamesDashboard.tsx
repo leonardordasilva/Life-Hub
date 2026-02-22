@@ -8,6 +8,7 @@ import { useToast } from '../../components/Toast';
 import { Gamepad2, Plus, Trash2, Search, X, Pencil, PlayCircle, CheckCircle, Clock, Loader2, Trophy, Coffee, Image as ImageIcon, Check, Calendar, Layers, RefreshCw, Star, ArrowRight, ChevronLeft, ChevronRight, Upload } from 'lucide-react';
 import { ImportModal } from '../../components/ImportModal';
 import { ImportedRow } from '../../services/fileImportService';
+import { ClearAllModal } from '../../components/ClearAllModal';
 
 const GAMES_PER_PAGE = 8;
 interface PosterCardProps {
@@ -67,7 +68,7 @@ const PosterCard: React.FC<PosterCardProps> = ({ item, children, actions, onClic
 interface GamesDashboardProps {}
 
 export const GamesDashboard: React.FC<GamesDashboardProps> = () => {
-    const { games, loading, addGame, editGame, syncGame, checkMetadataSync, applyBatchUpdates, removeGame, updateGameStatus } = useGames();
+    const { games, loading, addGame, editGame, syncGame, checkMetadataSync, applyBatchUpdates, removeGame, updateGameStatus, clearAllGames } = useGames();
     const { showToast } = useToast();
     const isAdmin = true; // All users can manage their own data (RLS handles isolation)
 
@@ -99,6 +100,7 @@ export const GamesDashboard: React.FC<GamesDashboardProps> = () => {
     const [genres, setGenres] = useState<string[]>([]);
     const [rawgLoading, setRawgLoading] = useState(false);
     const [showImportModal, setShowImportModal] = useState(false);
+    const [showClearModal, setShowClearModal] = useState(false);
 
     // Stats
     const stats = useMemo(() => ({
@@ -255,6 +257,7 @@ export const GamesDashboard: React.FC<GamesDashboardProps> = () => {
                         </div>
                         {isAdmin && (
                             <>
+                                <button onClick={() => setShowClearModal(true)} className="btn btn-md whitespace-nowrap bg-red-900/30 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/20 hover:border-red-400 transition-all"><Trash2 className="w-4 h-4" /> Limpar</button>
                                 <button onClick={() => setShowImportModal(true)} className="btn btn-md whitespace-nowrap bg-slate-700 hover:bg-slate-600 text-white"><Upload className="w-4 h-4" /> Importar</button>
                                 <button onClick={openModal} className="btn btn-md btn-violet whitespace-nowrap"><Plus className="w-4 h-4" /> Adicionar</button>
                             </>
@@ -531,6 +534,17 @@ export const GamesDashboard: React.FC<GamesDashboardProps> = () => {
                         });
                     }
                     showToast(`${rows.length} jogos importados com sucesso!`, 'success');
+                }}
+            />
+            <ClearAllModal
+                isOpen={showClearModal}
+                onClose={() => setShowClearModal(false)}
+                title="Limpar Biblioteca de Jogos"
+                description="Isso irá remover TODOS os jogos da sua biblioteca. Esta ação não pode ser desfeita."
+                itemCount={games.length}
+                onConfirm={async () => {
+                    await clearAllGames();
+                    showToast('Todos os jogos foram removidos.', 'success');
                 }}
             />
             <style>{`.input-std{width:100%;background:#1e293b;border:1px solid #334155;border-radius:0.5rem;padding:0.5rem 0.75rem;color:white;outline:none;font-size:0.875rem}.input-std:focus{border-color:#8b5cf6;ring:1px solid #8b5cf6}.label-std{display:block;font-size:0.75rem;color:#94a3b8;margin-bottom:0.25rem;font-weight:500}`}</style>

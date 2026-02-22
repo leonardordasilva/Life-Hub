@@ -524,5 +524,22 @@ export const useEntertainment = () => {
         fetchItems();
     };
 
-    return { items, loading, addItem, editItem, syncItem, updateStatus, incrementProgress, removeItem, checkMetadataSync, applyBatchUpdates };
+    const clearAll = async (type: MediaType) => {
+        const table = getTable(type);
+        const { error } = await supabase.from(table).delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        if (error) console.error('Error clearing items:', error);
+        else fetchItems();
+    };
+
+    const clearAllEntertainment = async () => {
+        await Promise.all([
+            supabase.from('ent_series').delete().neq('id', '00000000-0000-0000-0000-000000000000'),
+            supabase.from('ent_movies').delete().neq('id', '00000000-0000-0000-0000-000000000000'),
+            supabase.from('ent_animes').delete().neq('id', '00000000-0000-0000-0000-000000000000'),
+            supabase.from('ent_books').delete().neq('id', '00000000-0000-0000-0000-000000000000'),
+        ]);
+        fetchItems();
+    };
+
+    return { items, loading, addItem, editItem, syncItem, updateStatus, incrementProgress, removeItem, checkMetadataSync, applyBatchUpdates, clearAll, clearAllEntertainment };
 };
