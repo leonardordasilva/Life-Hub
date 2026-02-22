@@ -165,7 +165,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ userId, profile, userE
       <div className="space-y-3 mb-6">
         <div className="flex items-start gap-2 p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-xl text-xs text-indigo-300">
           <Info className="w-4 h-4 shrink-0 mt-0.5" />
-          <span>A visibilidade comunitária é uma preferência para uma funcionalidade futura.</span>
+          <span>Ative a visibilidade comunitária para que outros usuários possam ver seus dados nos módulos selecionados.</span>
         </div>
         <ModuleRow label="Financeiro" icon={<Wallet className="w-5 h-5 text-amber-400" />} enabled={moduleFinance} onToggle={(v) => { setModuleFinance(v); if (!v) setCommunityFinance(false); }} community={communityFinance} onCommunityToggle={setCommunityFinance} />
         <ModuleRow label="Férias" icon={<Plane className="w-5 h-5 text-cyan-400" />} enabled={moduleVacation} onToggle={(v) => { setModuleVacation(v); if (!v) setCommunityVacation(false); }} community={communityVacation} onCommunityToggle={setCommunityVacation} />
