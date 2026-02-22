@@ -1,4 +1,4 @@
-### 🟣 2. Life Hub
+### 🟣 Life Hub
 
 > **Painel pessoal para gerenciar finanças, entretenimento, jogos e viagens — tudo em um só lugar.**
 
