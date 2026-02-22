@@ -5,10 +5,12 @@ interface LoginScreenProps {
   onSignIn: (email: string, password: string) => Promise<void>;
   onSignUp: (email: string, password: string) => Promise<void>;
   onForgotPassword: () => void;
+  defaultSignUp?: boolean;
+  onBack?: () => void;
 }
 
-export const LoginScreen: React.FC<LoginScreenProps> = ({ onSignIn, onSignUp, onForgotPassword }) => {
-  const [isSignUp, setIsSignUp] = useState(false);
+export const LoginScreen: React.FC<LoginScreenProps> = ({ onSignIn, onSignUp, onForgotPassword, defaultSignUp = false, onBack }) => {
+  const [isSignUp, setIsSignUp] = useState(defaultSignUp);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -57,6 +59,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onSignIn, onSignUp, on
 
       <div className="w-full max-w-md z-10">
         <div className="text-center mb-8">
+          {onBack && (
+            <button onClick={onBack} className="text-sm text-slate-500 hover:text-slate-300 transition-colors mb-4 inline-block">
+              ← Voltar
+            </button>
+          )}
           <h1 className="text-4xl font-bold text-white tracking-tight mb-2">Live Hub</h1>
           <p className="text-slate-400">{isSignUp ? 'Crie sua conta' : 'Entre na sua conta'}</p>
         </div>
