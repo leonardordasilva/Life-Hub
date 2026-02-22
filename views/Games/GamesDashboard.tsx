@@ -522,8 +522,9 @@ export const GamesDashboard: React.FC<GamesDashboardProps> = () => {
                 onClose={() => setShowImportModal(false)}
                 title="Importar Jogos"
                 typeLabel="jogos"
-                onImport={async (rows: ImportedRow[]) => {
-                    for (const row of rows) {
+                onImport={async (rows, onProgress) => {
+                    for (let i = 0; i < rows.length; i++) {
+                        const row = rows[i];
                         await addGame({
                             title: row.title,
                             status: (row.status as MediaStatus) || 'PENDING',
@@ -532,6 +533,8 @@ export const GamesDashboard: React.FC<GamesDashboardProps> = () => {
                             synopsis: row.synopsis,
                             genres: row.genres,
                         });
+                        onProgress({ current: i + 1, total: rows.length, percent: Math.round(((i + 1) / rows.length) * 100) });
+                        await new Promise(r => setTimeout(r, 30));
                     }
                     showToast(`${rows.length} jogos importados com sucesso!`, 'success');
                 }}
