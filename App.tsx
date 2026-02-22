@@ -11,16 +11,19 @@ import { ForgotPassword } from './views/ForgotPassword';
 import { ResetPassword } from './views/ResetPassword';
 import { OnboardingFlow, OnboardingData } from './views/Onboarding/OnboardingFlow';
 import { ProfilePage } from './views/Profile/ProfilePage';
+import { CommunityPage } from './views/Community/CommunityPage';
+import { CommunityUserView } from './views/Community/CommunityUserView';
 import { AppSection } from './types';
 import { 
-  LayoutDashboard, Wallet, Plane, Film, Gamepad2, Loader2, Menu, X, User, LogOut
+  LayoutDashboard, Wallet, Plane, Film, Gamepad2, Loader2, Menu, X, User, LogOut, Users
 } from 'lucide-react';
 import { useAuth } from './hooks/useAuth';
 import { useProfile } from './hooks/useProfile';
+import { useCommunity, CommunityUser } from './hooks/useCommunity';
 import { supabase } from './services/supabaseClient';
 
 const App: React.FC = () => {
-  const [currentSection, setCurrentSection] = useState<AppSection | 'PROFILE'>(AppSection.HOME);
+  const [currentSection, setCurrentSection] = useState<AppSection | 'PROFILE' | 'COMMUNITY'>(AppSection.HOME);
   const [isDbReady, setIsDbReady] = useState<boolean | null>(null);
   const [dbError, setDbError] = useState<string | null>(null);
   const [retryTrigger, setRetryTrigger] = useState(0);
@@ -28,9 +31,11 @@ const App: React.FC = () => {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [authView, setAuthView] = useState<'landing' | 'login' | 'signup'>('landing');
+  const [selectedCommunityUser, setSelectedCommunityUser] = useState<CommunityUser | null>(null);
   
   const { user, loading: authLoading, signIn, signUp, signOut } = useAuth();
   const { profile, loading: profileLoading, updateProfile, uploadAvatar, refetch: refetchProfile } = useProfile(user?.id ?? null);
+  const { users: communityUsers, loading: communityLoading, fetchUserMedia, fetchUserTrips } = useCommunity();
 
   useEffect(() => {
     if (!user || !profile?.onboarding_completed) return;
@@ -173,6 +178,21 @@ const App: React.FC = () => {
         return profile.module_entertainment ? <EntertainmentDashboard profile={profile} /> : <Home onNavigate={(s) => setCurrentSection(s)} profile={profile} />;
       case AppSection.GAMES:
         return profile.module_games ? <GamesDashboard /> : <Home onNavigate={(s) => setCurrentSection(s)} profile={profile} />;
+      case 'COMMUNITY':
+        return selectedCommunityUser ? (
+          <CommunityUserView 
+            user={selectedCommunityUser} 
+            onBack={() => setSelectedCommunityUser(null)} 
+            fetchUserMedia={fetchUserMedia} 
+            fetchUserTrips={fetchUserTrips} 
+          />
+        ) : (
+          <CommunityPage 
+            users={communityUsers} 
+            loading={communityLoading} 
+            onSelectUser={(u) => setSelectedCommunityUser(u)} 
+          />
+        );
       case 'PROFILE':
         return <ProfilePage userId={user.id} profile={profile} userEmail={user.email || ''} onUpdate={() => { refetchProfile(); setCurrentSection(AppSection.HOME); }} />;
       default:
@@ -188,6 +208,11 @@ const App: React.FC = () => {
     { id: AppSection.GAMES, label: 'Jogos', icon: <Gamepad2 className="w-5 h-5" />, visible: profile.module_games },
   ].filter(item => item.visible);
 
+  const handleNavigation = (section: AppSection | 'PROFILE' | 'COMMUNITY') => {
+    setCurrentSection(section);
+    if (section !== 'COMMUNITY') setSelectedCommunityUser(null);
+    setIsMobileMenuOpen(false);
+  };
   return (
     <div className="flex h-screen bg-slate-900 text-slate-100 font-sans selection:bg-purple-500/30 overflow-hidden">
       <div className="md:hidden fixed top-4 left-4 z-50">
@@ -213,10 +238,7 @@ const App: React.FC = () => {
             return (
               <button
                 key={item.id}
-                onClick={() => {
-                  setCurrentSection(item.id);
-                  setIsMobileMenuOpen(false);
-                }}
+                onClick={() => handleNavigation(item.id)}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
                   isActive 
                     ? 'bg-gradient-to-r from-indigo-600/20 to-purple-600/20 text-white border border-indigo-500/30 shadow-[0_0_15px_rgba(99,102,241,0.15)]' 
@@ -234,7 +256,18 @@ const App: React.FC = () => {
 
         <div className="p-4 border-t border-white/5 space-y-2">
             <button
-              onClick={() => { setCurrentSection('PROFILE'); setIsMobileMenuOpen(false); }}
+              onClick={() => handleNavigation('COMMUNITY')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+                currentSection === 'COMMUNITY'
+                  ? 'bg-gradient-to-r from-indigo-600/20 to-purple-600/20 text-white border border-indigo-500/30' 
+                  : 'text-slate-400 hover:text-white hover:bg-white/5 border border-transparent'
+              }`}
+            >
+              <Users className="w-5 h-5" />
+              Comunidade
+            </button>
+            <button
+              onClick={() => handleNavigation('PROFILE')}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
                 currentSection === 'PROFILE'
                   ? 'bg-gradient-to-r from-indigo-600/20 to-purple-600/20 text-white border border-indigo-500/30' 
