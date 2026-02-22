@@ -174,7 +174,7 @@ const App: React.FC = () => {
       case AppSection.GAMES:
         return profile.module_games ? <GamesDashboard /> : <Home onNavigate={(s) => setCurrentSection(s)} profile={profile} />;
       case 'PROFILE':
-        return <ProfilePage userId={user.id} profile={profile} onUpdate={refetchProfile} />;
+        return <ProfilePage userId={user.id} profile={profile} userEmail={user.email || ''} onUpdate={() => { refetchProfile(); setCurrentSection(AppSection.HOME); }} />;
       default:
         return <Home onNavigate={(s) => setCurrentSection(s)} profile={profile} />;
     }
