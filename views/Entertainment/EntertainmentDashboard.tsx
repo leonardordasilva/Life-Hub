@@ -5,7 +5,9 @@ import { searchTMDBMany, getTMDBDetails, TMDBResult } from '../../services/tmdbS
 import { searchOpenLibrary, searchOpenLibraryMany, searchByISBN, getBookDetails } from '../../services/openLibraryService';
 import { translateToPortuguese } from '../../services/geminiService';
 import { useToast } from '../../components/Toast';
-import { Film, Tv, Book, Plus, Trash2, Calendar, User, List, CheckCircle, Clock, PlayCircle, Pencil, Check, Filter, Zap, PauseCircle, ChevronLeft, ChevronRight, Search, X, Loader2, Image as ImageIcon, BarChart2, Layers, RefreshCw, AlertTriangle, ArrowRight, Bookmark, Star } from 'lucide-react';
+import { Film, Tv, Book, Plus, Trash2, Calendar, User, List, CheckCircle, Clock, PlayCircle, Pencil, Check, Filter, Zap, PauseCircle, ChevronLeft, ChevronRight, Search, X, Loader2, Image as ImageIcon, BarChart2, Layers, RefreshCw, AlertTriangle, ArrowRight, Bookmark, Star, Upload } from 'lucide-react';
+import { ImportModal } from '../../components/ImportModal';
+import { ImportedRow } from '../../services/fileImportService';
 
 const ITEMS_PER_PAGE = 6;
 
@@ -157,6 +159,7 @@ export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = () 
     const [externalId, setExternalId] = useState(''); // Stores TMDB ID or OL Key
     const [tmdbLoading, setTmdbLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [showImportModal, setShowImportModal] = useState(false);
 
     // Filtering Base Lists
     const series = items.filter(i => i.type === 'SERIES');
@@ -598,7 +601,12 @@ export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = () 
                             <input type="text" placeholder="Buscar por título..." value={searchQuery} onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }} className="relative w-full pl-10 pr-10 py-2.5 bg-slate-800/90 backdrop-blur-sm border border-white/10 rounded-xl text-sm text-white focus:border-pink-500/50 focus:ring-2 focus:ring-pink-500/20 outline-none transition-all placeholder:text-slate-500" />
                             {searchQuery && <button onClick={() => { setSearchQuery(''); setCurrentPage(1); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-pink-400 transition-colors z-10"><X className="w-4 h-4" /></button>}
                         </div>
-                        {isAdmin && <button onClick={openModal} className="btn btn-md btn-pink whitespace-nowrap"><Plus className="w-4 h-4" /> Adicionar</button>}
+                        {isAdmin && (
+                            <>
+                                <button onClick={() => setShowImportModal(true)} className="btn btn-md whitespace-nowrap bg-slate-700 hover:bg-slate-600 text-white"><Upload className="w-4 h-4" /> Importar</button>
+                                <button onClick={openModal} className="btn btn-md btn-pink whitespace-nowrap"><Plus className="w-4 h-4" /> Adicionar</button>
+                            </>
+                        )}
                     </div>
                 </header>
 
@@ -1127,6 +1135,31 @@ export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = () 
                 )}
 
             </div>
+
+            <ImportModal
+                isOpen={showImportModal}
+                onClose={() => setShowImportModal(false)}
+                title={`Importar ${activeTab === 'SERIES' ? 'Séries' : activeTab === 'MOVIES' ? 'Filmes' : activeTab === 'ANIME' ? 'Animes' : 'Livros'}`}
+                typeLabel={activeTab === 'SERIES' ? 'séries' : activeTab === 'MOVIES' ? 'filmes' : activeTab === 'ANIME' ? 'animes' : 'livros'}
+                onImport={async (rows: ImportedRow[]) => {
+                    const typeMap: Record<string, MediaType> = { SERIES: 'SERIES', MOVIES: 'MOVIE', ANIME: 'ANIME', BOOKS: 'BOOK' };
+                    const mediaType = typeMap[activeTab];
+                    for (const row of rows) {
+                        await addItem({
+                            title: row.title,
+                            type: mediaType,
+                            status: (row.status as MediaStatus) || 'PENDING',
+                            rating: row.rating,
+                            synopsis: row.synopsis,
+                            genres: row.genres,
+                            author: row.author,
+                            isbn: row.isbn,
+                            platform: row.platform,
+                        });
+                    }
+                    showToast(`${rows.length} itens importados com sucesso!`, 'success');
+                }}
+            />
             <style>{`
         /* Ocultar spin buttons de inputs numéricos para uma UI mais limpa */
         input[type=number]::-webkit-inner-spin-button, 
