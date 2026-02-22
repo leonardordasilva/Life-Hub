@@ -6,13 +6,10 @@ import { TransactionManager } from './TransactionManager';
 import { AnnualReport } from './AnnualReport';
 import { ReserveManager } from './ReserveManager';
 import { LayoutDashboard, Tag, FileText, Wallet, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
-import { UserRole } from '../../types';
 
-interface FinanceDashboardProps {
-    role: UserRole;
-}
+interface FinanceDashboardProps {}
 
-export const FinanceDashboard: React.FC<FinanceDashboardProps> = ({ role }) => {
+export const FinanceDashboard: React.FC<FinanceDashboardProps> = () => {
   const { showToast } = useToast();
   const handleError = useCallback((msg: string) => showToast(msg, 'error'), [showToast]);
   const { 
