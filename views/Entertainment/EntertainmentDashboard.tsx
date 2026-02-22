@@ -97,13 +97,13 @@ interface SyncState {
 }
 
 interface EntertainmentDashboardProps {
-    role: UserRole;
+    profile?: any;
 }
 
-export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = ({ role }) => {
+export const EntertainmentDashboard: React.FC<EntertainmentDashboardProps> = () => {
     const { items, loading, addItem, editItem, syncItem, removeItem, updateStatus, checkMetadataSync, applyBatchUpdates, incrementProgress } = useEntertainment();
     const { showToast } = useToast();
-    const isAdmin = role === 'ADMIN';
+    const isAdmin = true; // All users can manage their own data (RLS handles isolation)
 
     const labelClass = "block text-xs font-medium text-slate-400 mb-1 uppercase tracking-wider";
     const inputClass = "w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:ring-2 focus:ring-pink-500/50 outline-none transition-all placeholder:text-slate-600 disabled:opacity-50";
