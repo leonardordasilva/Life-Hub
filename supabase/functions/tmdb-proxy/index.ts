@@ -48,7 +48,8 @@ serve(async (req) => {
 
             case "tmdb_details": {
                 const type = url.searchParams.get("type") || payload.type;
-                const id = validateString(url.searchParams.get("id") || payload.id, 20);
+                const rawId = url.searchParams.get("id") || payload.id;
+                const id = validateString(rawId != null ? String(rawId) : undefined, 20);
                 if (type !== "MOVIE" && type !== "SERIES" && type !== "ANIME") {
                     return new Response(JSON.stringify({ error: "Invalid type" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
                 }
