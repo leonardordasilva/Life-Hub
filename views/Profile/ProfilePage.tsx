@@ -186,17 +186,22 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ userId, profile, userE
                 { label: 'Animes', enabled: entAnimes, setEnabled: setEntAnimes, community: communityAnimes, setCommunity: setCommunityAnimes },
                 { label: 'Livros', enabled: entBooks, setEnabled: setEntBooks, community: communityBooks, setCommunity: setCommunityBooks },
               ].map((sub) => (
-                <div key={sub.label} className="flex items-center justify-between py-2 px-3 rounded-lg bg-slate-800/30">
-                  <div className="flex items-center gap-3">
-                    <button onClick={() => { sub.setEnabled(!sub.enabled); if (sub.enabled) sub.setCommunity(false); }} className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${sub.enabled ? 'bg-indigo-600 border-indigo-600' : 'border-slate-600'}`}>
-                      {sub.enabled && <span className="text-white text-xs">✓</span>}
-                    </button>
-                    <span className="text-sm text-white">{sub.label}</span>
+                <div key={sub.label} className={`rounded-lg transition-all ${sub.enabled ? 'bg-slate-800/50' : 'bg-slate-800/20'}`}>
+                  <div className="flex items-center justify-between py-2.5 px-3">
+                    <div className="flex items-center gap-3">
+                      <button onClick={() => { sub.setEnabled(!sub.enabled); if (sub.enabled) sub.setCommunity(false); }} className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${sub.enabled ? 'bg-indigo-600 border-indigo-600' : 'border-slate-600'}`}>
+                        {sub.enabled && <span className="text-white text-xs">✓</span>}
+                      </button>
+                      <span className={`text-sm ${sub.enabled ? 'text-white' : 'text-slate-500'}`}>{sub.label}</span>
+                    </div>
                   </div>
                   {sub.enabled && (
-                    <button onClick={() => sub.setCommunity(!sub.community)} className={`p-1 rounded ${sub.community ? 'text-emerald-400' : 'text-slate-600'}`}>
-                      <Globe className="w-4 h-4" />
-                    </button>
+                    <div className="px-3 pb-2.5 flex items-center justify-between border-t border-white/5 pt-2">
+                      <span className="text-xs text-slate-500 flex items-center gap-1"><Globe className="w-3 h-3" /> Comunidade</span>
+                      <button onClick={() => sub.setCommunity(!sub.community)} className={`w-10 h-6 rounded-full transition-all relative ${sub.community ? 'bg-emerald-600' : 'bg-slate-700'}`}>
+                        <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${sub.community ? 'left-4' : 'left-0.5'}`} />
+                      </button>
+                    </div>
                   )}
                 </div>
               ))}
