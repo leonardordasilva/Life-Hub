@@ -6,10 +6,11 @@ import { Camera, User, Save, Loader2, Wallet, Plane, Film, Gamepad2, Globe, Info
 interface ProfilePageProps {
   userId: string;
   profile: UserProfile;
+  userEmail: string;
   onUpdate: () => void;
 }
 
-export const ProfilePage: React.FC<ProfilePageProps> = ({ userId, profile, onUpdate }) => {
+export const ProfilePage: React.FC<ProfilePageProps> = ({ userId, profile, userEmail, onUpdate }) => {
   const { updateProfile, uploadAvatar } = useProfile(userId);
   const { showToast } = useToast();
   const [saving, setSaving] = useState(false);
@@ -150,7 +151,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ userId, profile, onUpd
           </div>
           <div>
             <label className="block text-xs font-medium text-slate-400 mb-1">E-mail</label>
-            <input type="email" value={profile.email || ''} disabled className="w-full bg-slate-800/50 border border-slate-700/50 rounded-xl px-4 py-2.5 text-slate-400 cursor-not-allowed text-sm" />
+            <input type="email" value={profile.email || userEmail} disabled className="w-full bg-slate-800/50 border border-slate-700/50 rounded-xl px-4 py-2.5 text-slate-400 cursor-not-allowed text-sm" />
           </div>
         </div>
       </div>
