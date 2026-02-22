@@ -3,6 +3,7 @@ import { useVacation } from '../../hooks/useVacation';
 import { useToast } from '../../components/Toast';
 import { Plane, Building, Map, Plus, Trash2, Calendar, Clock, Ticket, Pencil, Check, DollarSign, MapPin, Luggage, Loader2, Timer, ChevronLeft, ChevronRight } from 'lucide-react';
 import { VacationFlight, VacationHotel, VacationTour, TourType, VacationTrip, FlightTripType } from '../../types';
+import { getAirlineLogo } from '../../services/airlineLogoService';
 
 interface VacationDashboardProps {}
 
@@ -521,7 +522,11 @@ export const VacationDashboard: React.FC<VacationDashboardProps> = () => {
                                         <div className="flex justify-between items-start mb-6 border-b border-dashed border-white/10 pb-4">
                                             <div>
                                                 <div className="flex items-center gap-2 mb-1">
-                                                    <span className="text-xs text-slate-400 font-bold tracking-wider uppercase">{f.airline}</span>
+                                                    {getAirlineLogo(f.airline) ? (
+                                                        <img src={getAirlineLogo(f.airline)!} alt={f.airline} title={f.airline} className="h-7 w-7 object-contain rounded bg-white/10 p-0.5" />
+                                                    ) : (
+                                                        <span className="text-xs text-slate-400 font-bold tracking-wider uppercase">{f.airline}</span>
+                                                    )}
                                                     <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold border ${
                                                         f.tripType === 'ONE_WAY' 
                                                         ? 'border-amber-500/40 text-amber-400 bg-amber-900/20' 
