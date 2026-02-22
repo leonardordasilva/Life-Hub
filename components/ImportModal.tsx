@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { flushSync } from 'react-dom';
-import { X, Upload, FileSpreadsheet, AlertTriangle, CheckCircle, ChevronLeft, ChevronRight, Loader2, FileText } from 'lucide-react';
+import { X, Upload, FileSpreadsheet, AlertTriangle, CheckCircle, ChevronLeft, ChevronRight, Loader2, FileText, Pause, Play, Trash2, Save } from 'lucide-react';
 import { parseImportFile, validateFileExtension, ImportedRow, ImportResult } from '../services/fileImportService';
 
 export interface ImportProgress {
@@ -12,16 +12,23 @@ export interface ImportProgress {
 interface ImportModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onImport: (rows: ImportedRow[], onProgress: (progress: ImportProgress) => void) => Promise<void>;
+  onImport: (
+    rows: ImportedRow[],
+    onProgress: (progress: ImportProgress) => void,
+    cancelRef: React.MutableRefObject<boolean>
+  ) => Promise<string[]>; // returns array of inserted IDs
+  onDiscardImported?: (ids: string[]) => Promise<void>;
   title: string;
   typeLabel: string;
 }
 
 const PREVIEW_PAGE_SIZE = 10;
 
-export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImport, title, typeLabel }) => {
+type Stage = 'SELECT' | 'PREVIEW' | 'IMPORTING' | 'PAUSED' | 'DONE';
+
+export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImport, onDiscardImported, title, typeLabel }) => {
   const fileRef = useRef<HTMLInputElement>(null);
-  const [stage, setStage] = useState<'SELECT' | 'PREVIEW' | 'IMPORTING' | 'DONE'>('SELECT');
+  const [stage, setStage] = useState<Stage>('SELECT');
   const [result, setResult] = useState<ImportResult | null>(null);
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   const [previewPage, setPreviewPage] = useState(1);
@@ -29,6 +36,11 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
   const [importedCount, setImportedCount] = useState(0);
   const [importProgress, setImportProgress] = useState<ImportProgress>({ current: 0, total: 0, percent: 0 });
   const [dragOver, setDragOver] = useState(false);
+  const [wasCancelled, setWasCancelled] = useState(false);
+
+  const cancelRef = useRef(false);
+  const allRowsRef = useRef<ImportedRow[]>([]);
+  const importedIdsRef = useRef<string[]>([]);
 
   const reset = () => {
     setStage('SELECT');
@@ -38,6 +50,10 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
     setImportErrors([]);
     setImportedCount(0);
     setImportProgress({ current: 0, total: 0, percent: 0 });
+    setWasCancelled(false);
+    cancelRef.current = false;
+    allRowsRef.current = [];
+    importedIdsRef.current = [];
     if (fileRef.current) fileRef.current.value = '';
   };
 
@@ -52,7 +68,6 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
       setStage('PREVIEW');
       return;
     }
-
     const parsed = await parseImportFile(file);
     setResult(parsed);
     if (parsed.rows.length > 0) {
@@ -87,26 +102,81 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
     else setSelectedRows(new Set(result.rows.map((_, i) => i)));
   };
 
+  const runImport = async (rows: ImportedRow[], startFrom: number, total: number) => {
+    cancelRef.current = false;
+    setStage('IMPORTING');
+
+    try {
+      const newIds = await onImport(rows, (progress) => {
+        flushSync(() => {
+          setImportProgress({
+            current: startFrom + progress.current,
+            total,
+            percent: Math.round(((startFrom + progress.current) / total) * 100)
+          });
+        });
+      }, cancelRef);
+
+      importedIdsRef.current = [...importedIdsRef.current, ...newIds];
+
+      if (cancelRef.current) {
+        setStage('PAUSED');
+      } else {
+        setImportedCount(total);
+        setWasCancelled(false);
+        setStage('DONE');
+      }
+    } catch (e: any) {
+      setImportErrors([e.message || 'Erro ao importar']);
+      setStage('DONE');
+    }
+  };
+
   const handleImport = async () => {
     if (!result) return;
     const toImport = result.rows.filter((_, i) => selectedRows.has(i));
     if (toImport.length === 0) return;
 
-    setStage('IMPORTING');
+    allRowsRef.current = toImport;
+    importedIdsRef.current = [];
     setImportProgress({ current: 0, total: toImport.length, percent: 0 });
-    try {
-      await onImport(toImport, (progress) => {
-        flushSync(() => {
-          setImportProgress(progress);
-        });
-      });
-      setImportedCount(toImport.length);
+    await runImport(toImport, 0, toImport.length);
+  };
+
+  const handleCancelRequest = () => {
+    cancelRef.current = true;
+  };
+
+  const handleResume = async () => {
+    const done = importProgress.current;
+    const total = allRowsRef.current.length;
+    const remaining = allRowsRef.current.slice(done);
+    if (remaining.length === 0) {
+      setImportedCount(done);
       setStage('DONE');
-    } catch (e: any) {
-      setImportErrors([e.message || 'Erro ao importar']);
-      setImportedCount(importProgress.current);
-      setStage('DONE');
+      return;
     }
+    await runImport(remaining, done, total);
+  };
+
+  const handleKeepImported = async () => {
+    setImportedCount(importProgress.current);
+    setWasCancelled(true);
+    setStage('DONE');
+  };
+
+  const handleDiscardAll = async () => {
+    if (onDiscardImported && importedIdsRef.current.length > 0) {
+      try {
+        await onDiscardImported(importedIdsRef.current);
+      } catch (e) {
+        console.error('Error discarding imported items:', e);
+      }
+    }
+    importedIdsRef.current = [];
+    setImportedCount(0);
+    setWasCancelled(true);
+    setStage('DONE');
   };
 
   if (!isOpen) return null;
@@ -124,9 +194,11 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
             <FileSpreadsheet className="w-5 h-5 text-emerald-400" />
             {title}
           </h2>
-          <button onClick={handleClose} className="text-slate-400 hover:text-white transition-colors">
-            <X className="w-5 h-5" />
-          </button>
+          {stage !== 'IMPORTING' && (
+            <button onClick={handleClose} className="text-slate-400 hover:text-white transition-colors">
+              <X className="w-5 h-5" />
+            </button>
+          )}
         </div>
 
         <div className="flex-1 overflow-y-auto p-5">
@@ -141,17 +213,12 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
               <Upload className="w-12 h-12 text-slate-500 mx-auto mb-4" />
               <p className="text-white font-medium mb-2">Arraste um arquivo aqui ou clique para selecionar</p>
               <p className="text-slate-400 text-sm mb-6">Formatos aceitos: Excel (.xlsx, .xls), CSV (.csv) e Texto (.txt)</p>
-
               <div className="flex flex-col items-center gap-3">
-                <button
-                  onClick={() => fileRef.current?.click()}
-                  className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-medium transition-colors"
-                >
+                <button onClick={() => fileRef.current?.click()} className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-medium transition-colors">
                   Selecionar Arquivo
                 </button>
                 <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv,.txt" className="hidden" onChange={handleFileChange} />
               </div>
-
               <div className="mt-8 text-left bg-slate-800/50 rounded-xl p-4 border border-white/5">
                 <p className="text-xs font-bold text-slate-300 mb-2 uppercase tracking-wider">Formato esperado</p>
                 <p className="text-xs text-slate-400 mb-2">O arquivo deve conter ao menos a coluna <span className="text-emerald-400 font-mono">título</span> (ou <span className="text-emerald-400 font-mono">title</span>).</p>
@@ -180,7 +247,6 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
                   ))}
                 </div>
               )}
-
               {result.rows.length === 0 ? (
                 <div className="text-center py-12">
                   <FileText className="w-10 h-10 text-slate-600 mx-auto mb-3" />
@@ -197,18 +263,12 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
                       {selectedRows.size === result.rows.length ? 'Desmarcar todos' : 'Selecionar todos'}
                     </button>
                   </div>
-
                   <div className="bg-slate-800/50 rounded-xl border border-white/5 overflow-hidden">
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b border-white/5">
                           <th className="p-3 text-left w-10">
-                            <input
-                              type="checkbox"
-                              checked={selectedRows.size === result.rows.length}
-                              onChange={toggleAll}
-                              className="rounded border-slate-600 bg-slate-700 text-emerald-500 focus:ring-emerald-500/30"
-                            />
+                            <input type="checkbox" checked={selectedRows.size === result.rows.length} onChange={toggleAll} className="rounded border-slate-600 bg-slate-700 text-emerald-500 focus:ring-emerald-500/30" />
                           </th>
                           <th className="p-3 text-left text-xs text-slate-400 uppercase tracking-wider">Título</th>
                           <th className="p-3 text-left text-xs text-slate-400 uppercase tracking-wider">Status</th>
@@ -223,18 +283,11 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
                           return (
                             <tr key={globalIdx} className={`border-b border-white/5 transition-colors ${selectedRows.has(globalIdx) ? 'bg-emerald-500/5' : 'hover:bg-white/[0.02]'}`}>
                               <td className="p-3">
-                                <input
-                                  type="checkbox"
-                                  checked={selectedRows.has(globalIdx)}
-                                  onChange={() => toggleRow(globalIdx)}
-                                  className="rounded border-slate-600 bg-slate-700 text-emerald-500 focus:ring-emerald-500/30"
-                                />
+                                <input type="checkbox" checked={selectedRows.has(globalIdx)} onChange={() => toggleRow(globalIdx)} className="rounded border-slate-600 bg-slate-700 text-emerald-500 focus:ring-emerald-500/30" />
                               </td>
                               <td className="p-3 text-white font-medium truncate max-w-[200px]">{row.title}</td>
                               <td className="p-3">
-                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-slate-700 text-slate-300">
-                                  {row.status || 'PENDING'}
-                                </span>
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-slate-700 text-slate-300">{row.status || 'PENDING'}</span>
                               </td>
                               {result.headers.includes('rating') && <td className="p-3 text-slate-300">{row.rating ?? '-'}</td>}
                               {result.headers.includes('platform') && <td className="p-3 text-slate-300">{row.platform || '-'}</td>}
@@ -245,7 +298,6 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
                       </tbody>
                     </table>
                   </div>
-
                   {totalPreviewPages > 1 && (
                     <div className="flex justify-center items-center gap-4 mt-4">
                       <button onClick={() => setPreviewPage(p => p - 1)} disabled={previewPage === 1} className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-300"><ChevronLeft className="w-4 h-4" /></button>
@@ -266,8 +318,6 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
                 Importando {importProgress.current} de {importProgress.total} {typeLabel}
               </p>
               <p className="text-slate-400 text-sm mb-6">Aguarde enquanto os dados são salvos.</p>
-
-              {/* Progress Bar */}
               <div className="w-full max-w-xs">
                 <div className="w-full bg-slate-700/50 rounded-full h-3 overflow-hidden border border-white/5">
                   <div
@@ -276,6 +326,53 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
                   />
                 </div>
                 <p className="text-center text-xs text-emerald-400 font-bold mt-2">{importProgress.percent}%</p>
+              </div>
+              <button
+                onClick={handleCancelRequest}
+                className="mt-8 px-5 py-2 bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white rounded-xl text-sm font-medium transition-colors flex items-center gap-2"
+              >
+                <Pause className="w-4 h-4" />
+                Pausar Importação
+              </button>
+            </div>
+          )}
+
+          {/* Stage: PAUSED */}
+          {stage === 'PAUSED' && (
+            <div className="flex flex-col items-center justify-center py-12">
+              <div className="w-14 h-14 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mb-5">
+                <Pause className="w-7 h-7 text-amber-400" />
+              </div>
+              <p className="text-white font-bold text-lg mb-1">Importação Pausada</p>
+              <p className="text-slate-400 text-sm mb-2">
+                <span className="text-amber-400 font-bold">{importProgress.current}</span> de <span className="text-white font-bold">{importProgress.total}</span> {typeLabel} foram importados até agora.
+              </p>
+              <p className="text-slate-500 text-xs mb-8">O que deseja fazer?</p>
+
+              <div className="flex flex-col gap-3 w-full max-w-sm">
+                <button
+                  onClick={handleResume}
+                  className="w-full px-5 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+                >
+                  <Play className="w-4 h-4" />
+                  Retomar Importação
+                </button>
+                <button
+                  onClick={handleKeepImported}
+                  className="w-full px-5 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+                >
+                  <Save className="w-4 h-4" />
+                  Manter {importProgress.current} Importados
+                </button>
+                {onDiscardImported && (
+                  <button
+                    onClick={handleDiscardAll}
+                    className="w-full px-5 py-3 bg-red-950/50 hover:bg-red-900/50 border border-red-500/30 text-red-300 hover:text-red-200 rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Descartar Tudo
+                  </button>
+                )}
               </div>
             </div>
           )}
@@ -289,10 +386,23 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
                   <p className="text-red-300 font-medium mb-2">Erro durante importação</p>
                   {importErrors.map((e, i) => <p key={i} className="text-xs text-red-400">{e}</p>)}
                 </>
+              ) : importedCount === 0 && wasCancelled ? (
+                <>
+                  <Trash2 className="w-10 h-10 text-slate-500 mb-4" />
+                  <p className="text-slate-300 font-medium">Importação cancelada</p>
+                  <p className="text-slate-500 text-sm mt-1">Todos os dados foram descartados.</p>
+                </>
               ) : (
                 <>
                   <CheckCircle className="w-10 h-10 text-emerald-400 mb-4" />
-                  <p className="text-white font-medium">{importedCount} {typeLabel} importado(s) com sucesso!</p>
+                  <p className="text-white font-medium">
+                    {importedCount} {typeLabel} importado(s) com sucesso!
+                  </p>
+                  {wasCancelled && (
+                    <p className="text-slate-400 text-sm mt-1">
+                      Importação parcial — {allRowsRef.current.length - importedCount} itens não foram importados.
+                    </p>
+                  )}
                 </>
               )}
             </div>
