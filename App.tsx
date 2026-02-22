@@ -6,6 +6,7 @@ import { EntertainmentDashboard } from './views/Entertainment/EntertainmentDashb
 import { GamesDashboard } from './views/Games/GamesDashboard';
 import { SetupScreen } from './views/SetupScreen';
 import { LoginScreen } from './views/LoginScreen';
+import { LandingPage } from './views/LandingPage';
 import { ForgotPassword } from './views/ForgotPassword';
 import { ResetPassword } from './views/ResetPassword';
 import { AppSection } from './types';
@@ -32,6 +33,7 @@ const App: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
+  const [authView, setAuthView] = useState<'landing' | 'login' | 'signup'>('landing');
   
   const { user, userRole, loading: authLoading, signIn, signUp, signOut } = useAuth();
 
@@ -95,9 +97,25 @@ const App: React.FC = () => {
 
   if (!user || !userRole) {
     if (showForgotPassword) {
-      return <ForgotPassword onBack={() => setShowForgotPassword(false)} />;
+      return <ForgotPassword onBack={() => { setShowForgotPassword(false); setAuthView('login'); }} />;
     }
-    return <LoginScreen onSignIn={signIn} onSignUp={signUp} onForgotPassword={() => setShowForgotPassword(true)} />;
+    if (authView === 'login' || authView === 'signup') {
+      return (
+        <LoginScreen 
+          onSignIn={signIn} 
+          onSignUp={signUp} 
+          onForgotPassword={() => setShowForgotPassword(true)}
+          defaultSignUp={authView === 'signup'}
+          onBack={() => setAuthView('landing')}
+        />
+      );
+    }
+    return (
+      <LandingPage 
+        onGoToLogin={() => setAuthView('login')} 
+        onGoToSignUp={() => setAuthView('signup')} 
+      />
+    );
   }
 
   if (isDbReady === null) {
