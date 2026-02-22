@@ -828,10 +828,6 @@ export const VacationDashboard: React.FC<VacationDashboardProps> = () => {
                              <input required disabled={submitting} placeholder="Cia Aérea" className="input-std disabled:opacity-50" value={flightForm.airline || ''} onChange={e => setFlightForm({...flightForm, airline: e.target.value})} />
                              <input required disabled={submitting} placeholder="Localizador (PNR)" className="input-std disabled:opacity-50" value={flightForm.pnr || ''} onChange={e => setFlightForm({...flightForm, pnr: e.target.value})} />
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <input required disabled={submitting} type="number" step="0.01" placeholder="Valor Total (R$)" className="input-std disabled:opacity-50" value={flightForm.price || ''} onChange={e => setFlightForm({...flightForm, price: Number(e.target.value)})} />
-                        </div>
-
                         <div className="mt-2 pt-4 border-t border-white/10">
                             <h4 className="text-sm font-semibold text-cyan-400 mb-3 flex items-center gap-2">
                                 <Plane className="w-4 h-4" /> Voo de Ida
@@ -871,6 +867,11 @@ export const VacationDashboard: React.FC<VacationDashboardProps> = () => {
                                 </div>
                             </div>
                         )}
+
+                        <div className="mt-2 pt-4 border-t border-white/10">
+                            <label className="label-std">Valor Total (R$)</label>
+                            <input required disabled={submitting} type="number" step="0.01" placeholder="Valor Total (R$)" className="input-std disabled:opacity-50" value={flightForm.price || ''} onChange={e => setFlightForm({...flightForm, price: Number(e.target.value)})} />
+                        </div>
                     </>
                 )}
 
