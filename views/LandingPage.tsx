@@ -49,7 +49,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin, onGoToSig
           </div>
           <h2 className="text-4xl md:text-6xl font-bold leading-tight max-w-3xl text-white">
             Tudo o que importa,{' '}
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-purple-300 to-emerald-300">
+            <span className="text-indigo-400">
               em um só lugar
             </span>
           </h2>
