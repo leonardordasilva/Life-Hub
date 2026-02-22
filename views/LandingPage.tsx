@@ -23,7 +23,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin, onGoToSig
         <div className="absolute top-[30%] right-[20%] w-[300px] h-[300px] bg-emerald-900/15 rounded-full blur-[100px] pointer-events-none" />
 
         <header className="relative z-10 flex items-center justify-between px-6 md:px-12 py-6">
-          <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400">
+          <h1 className="text-2xl font-bold text-white">
             Live Hub
           </h1>
           <div className="flex items-center gap-3">
@@ -47,9 +47,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onGoToLogin, onGoToSig
             <Sparkles className="w-3.5 h-3.5" />
             Seu hub pessoal de organização
           </div>
-          <h2 className="text-4xl md:text-6xl font-bold leading-tight max-w-3xl">
+          <h2 className="text-4xl md:text-6xl font-bold leading-tight max-w-3xl text-white">
             Tudo o que importa,{' '}
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-emerald-400">
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-purple-300 to-emerald-300">
               em um só lugar
             </span>
           </h2>
