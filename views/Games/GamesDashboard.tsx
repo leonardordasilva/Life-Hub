@@ -537,7 +537,7 @@ export const GamesDashboard: React.FC<GamesDashboardProps> = () => {
                         });
                         if (id) importedIds.push(id);
                         onProgress({ current: i + 1, total: rows.length, percent: Math.round(((i + 1) / rows.length) * 100) });
-                        await new Promise(r => setTimeout(r, 0));
+                        await new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)));
                     }
                     if (!cancelRef.current) {
                         await fetchGames();
