@@ -6,7 +6,7 @@ const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.met
 
 export const supabase: any = createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: {
-    storage: typeof window !== 'undefined' ? localStorage : undefined,
+    storage: typeof window !== 'undefined' ? sessionStorage : undefined,
     persistSession: true,
     autoRefreshToken: true,
   }
